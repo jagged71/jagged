@@ -391,7 +391,6 @@
     </div>
 
     <script>
-	// Background Music System
 const music = {
   themes: [
     new Audio('sounds/Fire of Praetoria.mp3'),
@@ -400,48 +399,37 @@ const music = {
   ],
   currentTheme: null,
   isPlaying: false,
-  
+
   init() {
     this.themes.forEach(theme => {
       theme.loop = true;
       theme.volume = 0.5;
     });
   },
-  
+
   playRandom() {
-    // Fade out current theme if playing
     if (this.currentTheme) {
       this.fadeOut(this.currentTheme, 1000, () => {
         this.currentTheme.pause();
         this.currentTheme.currentTime = 0;
       });
     }
-    
-    // Select new random theme
+
     let availableThemes = this.themes.filter(t => t !== this.currentTheme);
     this.currentTheme = availableThemes[Math.floor(Math.random() * availableThemes.length)];
-    
-    // Fade in new theme
+
     this.currentTheme.currentTime = 0;
     this.currentTheme.volume = 0;
     this.currentTheme.play();
     this.fadeIn(this.currentTheme, 1500);
     this.isPlaying = true;
   },
-    // Fade in new theme
-    this.currentTheme.currentTime = 0;
-    this.currentTheme.volume = 0;
-    this.currentTheme.play();
-    this.fadeIn(this.currentTheme, 1500);
-    this.isPlaying = true;
-  },
-  
-  // Helper: Smooth fade out
+
   fadeOut(audio, duration, callback) {
     const fadeInterval = 50;
     const steps = duration / fadeInterval;
     const stepSize = audio.volume / steps;
-    
+
     const fade = setInterval(() => {
       if (audio.volume > stepSize) {
         audio.volume -= stepSize;
@@ -452,14 +440,13 @@ const music = {
       }
     }, fadeInterval);
   },
-  
-  // Helper: Smooth fade in
+
   fadeIn(audio, duration) {
     const targetVolume = 0.5;
     const fadeInterval = 50;
     const steps = duration / fadeInterval;
     const stepSize = targetVolume / steps;
-    
+
     audio.volume = 0;
     const fade = setInterval(() => {
       if (audio.volume < targetVolume - stepSize) {
@@ -470,8 +457,7 @@ const music = {
       }
     }, fadeInterval);
   },
-  
-  // Toggle playback (for mute button)
+
   toggle() {
     if (this.isPlaying) {
       this.fadeOut(this.currentTheme, 800);
