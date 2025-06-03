@@ -487,18 +487,24 @@ const music = {
 	let isMuted = false;
 
 // Toggle mute
-	muteBtn.addEventListener('click', () => {
-		isMuted = !isMuted;
-	if (isMuted) {
+muteBtn.addEventListener('click', () => {
+  isMuted = !isMuted;
+
+  if (isMuted) {
+    // Mute everything
     music.themes.forEach(theme => theme.volume = 0);
-    sounds.correct.volume = sfxVolumeSlider.value; // example for your sound effects
+    sounds.correct.volume = 0; // ✅ Mute SFX
     muteBtn.textContent = 'Unmute';
-	} else {
-    music.themes.forEach(theme => theme.volume = musicVolumeSlider.value);
-    sounds.correct.volume = sfxVolumeSlider.value;
+  } else {
+    // Restore volumes
+    const musicVol = parseFloat(musicVolumeSlider.value);
+    const sfxVol = parseFloat(sfxVolumeSlider.value);
+
+    music.themes.forEach(theme => theme.volume = musicVol);
+    sounds.correct.volume = sfxVol;
     muteBtn.textContent = 'Mute';
-	}
-	});
+  }
+});
 
 // Update music volume
 musicVolumeSlider.addEventListener('input', (e) => {
