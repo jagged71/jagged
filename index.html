@@ -391,6 +391,15 @@
     </div>
 
     <script>
+const audioManager = {
+  toggleMusic() {
+    music.toggle();
+    this.musicEnabled = music.isPlaying;
+    localStorage.setItem('musicEnabled', this.musicEnabled);
+    this.updateUI();
+  },
+  
+ 
 const music = {
   themes: [
     new Audio('sounds/Fire of Praetoria.mp3'),
@@ -401,6 +410,18 @@ const music = {
   isPlaying: false,
   
   // Initialize all themes
+  init() {
+    this.musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
+    this.sfxEnabled = localStorage.getItem('sfxEnabled') !== 'false';
+    
+    if (this.musicEnabled) {
+      music.playRandom(); // Auto-start music if enabled
+    }
+    
+    this.updateUI();
+  }
+};
+
   init() {
     this.themes.forEach(theme => {
       theme.loop = true;
@@ -833,6 +854,7 @@ const conclaveCharacters = [
         }
 
         function newGame() {
+			music.playRandom();
             initGame();
         }
 
