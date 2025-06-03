@@ -424,6 +424,7 @@ const music = {
     this.fadeOut(this.currentTheme, 1000, () => {
       this.currentTheme.pause();
       this.currentTheme.currentTime = 0;
+	  this.isPlaying = false; // ✅ This lets future playRandom() calls work
     });
   }
 
