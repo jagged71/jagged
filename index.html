@@ -511,8 +511,7 @@ musicVolumeSlider.addEventListener('input', (e) => {
 // Update sound effects volume
 sfxVolumeSlider.addEventListener('input', (e) => {
   if (!isMuted) {
-    sounds.correct.volume = sfxVolumeSlider.value;
-	sounds.correct.play()
+    sounds.correct.volume = e.targeet.value;
     // set volume for other sfx similarly
   }
 });
