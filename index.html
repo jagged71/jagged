@@ -491,7 +491,7 @@ const music = {
 		isMuted = !isMuted;
 	if (isMuted) {
     music.themes.forEach(theme => theme.volume = 0);
-    sounds.correct.volume = 0; // example for your sound effects
+    sounds.correct.volume = sfxVolumeSlider.value; // example for your sound effects
     muteBtn.textContent = 'Unmute';
 	} else {
     music.themes.forEach(theme => theme.volume = musicVolumeSlider.value);
@@ -511,7 +511,8 @@ musicVolumeSlider.addEventListener('input', (e) => {
 // Update sound effects volume
 sfxVolumeSlider.addEventListener('input', (e) => {
   if (!isMuted) {
-    sounds.correct.volume = e.target.value;
+    sounds.correct.volume = sfxVolumeSlider.value;
+	sounds.correct.play()
     // set volume for other sfx similarly
   }
 });
