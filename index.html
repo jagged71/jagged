@@ -479,6 +479,43 @@ const music = {
 
 // Initialize when game loads
     music.init();
+	
+	const muteBtn = document.getElementById('muteBtn');
+	const musicVolumeSlider = document.getElementById('musicVolume');
+	const sfxVolumeSlider = document.getElementById('sfxVolume');
+
+	let isMuted = false;
+
+// Toggle mute
+	muteBtn.addEventListener('click', () => {
+		isMuted = !isMuted;
+	if (isMuted) {
+    music.themes.forEach(theme => theme.volume = 0);
+    sounds.correct.volume = 0; // example for your sound effects
+    muteBtn.textContent = 'Unmute';
+	} else {
+    music.themes.forEach(theme => theme.volume = musicVolumeSlider.value);
+    sounds.correct.volume = sfxVolumeSlider.value;
+    muteBtn.textContent = 'Mute';
+	}
+	});
+
+// Update music volume
+musicVolumeSlider.addEventListener('input', (e) => {
+  if (!isMuted) {
+    const vol = e.target.value;
+    music.themes.forEach(theme => theme.volume = vol);
+  }
+});
+
+// Update sound effects volume
+sfxVolumeSlider.addEventListener('input', (e) => {
+  if (!isMuted) {
+    sounds.correct.volume = e.target.value;
+    // set volume for other sfx similarly
+  }
+});
+
 
     // ✅ Start music on first user interaction
     function startMusicOnFirstInteraction() {
