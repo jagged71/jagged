@@ -365,6 +365,8 @@
         <button class="btn" onclick="newGame()">New Game</button>
         <button class="btn" onclick="showHint()">Hint (Costs 10 pts)</button>
     </div>
+	
+	<div id="hint-counter">Hints: 2</div>
 
 	<div class="audio-controls">
 		<button id="muteBtn">Mute</button>
@@ -400,6 +402,8 @@
     </div>
 
     <script>
+let hintCount = 2; // Initialize hint count at the top of your code	
+
 const music = {
   themes: [
     new Audio('sounds/Fire of Praetoria.mp3'),
@@ -942,27 +946,16 @@ function newGame() {
 }
 
 function showHint() {
-    if (gameState.score < 10) {
-        alert("You need at least 10 points to use a hint!");
-        return;
-    }
-    
-    if (gameState.flippedCards.length === 1) {
-        const flippedCard = gameState.flippedCards[0];
-        const matchingCard = gameState.cards.find(card => 
-            card.matchId === flippedCard.card.matchId && 
-            card.id !== flippedCard.card.id
-        );
-        
-        if (matchingCard) {
-            const matchingIndex = gameState.cards.indexOf(matchingCard);
-            const matchingElement = document.querySelector(`[data-index="${matchingIndex}"]`);
-            
-            if (!matchingElement.classList.contains('matched')) {
-                // Deduct points for hint
-                gameState.score -= 10;
-                updateDisplay();
-                
+    if (hintCount > 0) { // Check if hints are available
+        // Your existing hint logic
+        if (flippedCards.length === 1) {
+            const flippedCard = flippedCards[0];
+            const matchingValue = flippedCard.dataset.value;
+            const matchingElement = Array.from(cards).find(card => 
+                card !== flippedCard && card.dataset.value === matchingValue
+            );
+
+            if (matchingElement) {
                 // Play hint sound (using pickle sound for hints)
                 sounds.pickle.play();
                 
@@ -973,11 +966,22 @@ function showHint() {
                     matchingElement.style.border = '';
                     matchingElement.style.boxShadow = '';
                 }, 2000);
+
+                hintCount--; // Decrease hint count
+                updateHintDisplay(); // Update the display
             }
+        } else {
+            alert("Flip one card first to get a hint for its match!");
         }
     } else {
-        alert("Flip one card first to get a hint for its match!");
+        alert("No hints remaining!"); // Show when out of hints
     }
+}
+
+function updateHintDisplay() {
+    // Add this HTML somewhere in your game:
+    // <div id="hint-counter">Hints: 2</div>
+    document.getElementById('hint-counter').textContent = `Hints: ${hintCount}`;
 }
 
 // High score functions
