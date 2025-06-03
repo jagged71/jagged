@@ -855,6 +855,7 @@ const conclaveCharacters = [
         }
 
         function newGame() {
+			if (!music.isPlaying) music.playRandom(); // ✅ Only play again if not playing
             initGame();
         }
 
