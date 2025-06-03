@@ -408,22 +408,32 @@ const music = {
   },
 
   playRandom() {
-    if (this.currentTheme) {
-      this.fadeOut(this.currentTheme, 1000, () => {
-        this.currentTheme.pause();
-        this.currentTheme.currentTime = 0;
-      });
-    }
+  const availableThemes = this.themes;
+  let newTheme = availableThemes[Math.floor(Math.random() * availableThemes.length)];
 
-    let availableThemes = this.themes.filter(t => t !== this.currentTheme);
-    this.currentTheme = availableThemes[Math.floor(Math.random() * availableThemes.length)];
-
-    this.currentTheme.currentTime = 0;
-    this.currentTheme.volume = 0;
+  // If it's the same theme, just resume it if it's paused
+  if (this.currentTheme === newTheme && this.currentTheme.paused) {
     this.currentTheme.play();
     this.fadeIn(this.currentTheme, 1500);
     this.isPlaying = true;
-  },
+    return;
+  }
+
+  // Fade out the current one
+  if (this.currentTheme && !this.currentTheme.paused) {
+    this.fadeOut(this.currentTheme, 1000, () => {
+      this.currentTheme.pause();
+      this.currentTheme.currentTime = 0;
+    });
+  }
+
+  this.currentTheme = newTheme;
+  this.currentTheme.currentTime = 0;
+  this.currentTheme.volume = 0;
+  this.currentTheme.play();
+  this.fadeIn(this.currentTheme, 1500);
+  this.isPlaying = true;
+}
 
   fadeOut(audio, duration, callback) {
     const fadeInterval = 50;
@@ -844,7 +854,6 @@ const conclaveCharacters = [
         }
 
         function newGame() {
-		  music.playRandom(); // <-- Add this line
             initGame();
         }
 
