@@ -391,15 +391,7 @@
     </div>
 
     <script>
-const audioManager = {
-  toggleMusic() {
-    music.toggle();
-    this.musicEnabled = music.isPlaying;
-    localStorage.setItem('musicEnabled', this.musicEnabled);
-    this.updateUI();
-  },
-  
- 
+	// Background Music System
 const music = {
   themes: [
     new Audio('sounds/Fire of Praetoria.mp3'),
@@ -409,27 +401,13 @@ const music = {
   currentTheme: null,
   isPlaying: false,
   
-  // Initialize all themes
-  init() {
-    this.musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
-    this.sfxEnabled = localStorage.getItem('sfxEnabled') !== 'false';
-    
-    if (this.musicEnabled) {
-      music.playRandom(); // Auto-start music if enabled
-    }
-    
-    this.updateUI();
-  }
-};
-
   init() {
     this.themes.forEach(theme => {
       theme.loop = true;
-      theme.volume = 0.5; // Default volume
+      theme.volume = 0.5;
     });
   },
   
-  // Play random theme (call when starting new game)
   playRandom() {
     // Fade out current theme if playing
     if (this.currentTheme) {
@@ -439,10 +417,17 @@ const music = {
       });
     }
     
-    // Select new random theme (excluding current one)
+    // Select new random theme
     let availableThemes = this.themes.filter(t => t !== this.currentTheme);
     this.currentTheme = availableThemes[Math.floor(Math.random() * availableThemes.length)];
     
+    // Fade in new theme
+    this.currentTheme.currentTime = 0;
+    this.currentTheme.volume = 0;
+    this.currentTheme.play();
+    this.fadeIn(this.currentTheme, 1500);
+    this.isPlaying = true;
+  },
     // Fade in new theme
     this.currentTheme.currentTime = 0;
     this.currentTheme.volume = 0;
@@ -496,7 +481,10 @@ const music = {
     this.isPlaying = !this.isPlaying;
   }
 };
-	
+
+// Initialize when game loads
+music.init();
+
 	// 🔊 Sound Effects Library
 const sounds = {
     flip: new Audio('sounds/flip.wav'),
@@ -854,7 +842,7 @@ const conclaveCharacters = [
         }
 
         function newGame() {
-			music.playRandom();
+		  music.playRandom(); // <-- Add this line
             initGame();
         }
 
