@@ -469,7 +469,23 @@ const music = {
 };
 
 // Initialize when game loads
-music.init();
+    music.init();
+
+    // ✅ Start music on first user interaction
+    function startMusicOnFirstInteraction() {
+        function playOnce() {
+            music.playRandom();
+            window.removeEventListener('click', playOnce);
+            window.removeEventListener('keydown', playOnce);
+            window.removeEventListener('touchstart', playOnce);
+        }
+
+        window.addEventListener('click', playOnce);
+        window.addEventListener('keydown', playOnce);
+        window.addEventListener('touchstart', playOnce);
+    }
+
+    startMusicOnFirstInteraction(); // ✅ Call it here
 
 	// 🔊 Sound Effects Library
 const sounds = {
