@@ -1,715 +1,673 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Conclave Arcana Memory Game</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Conclave Arcana Memory Game - VS Portia</title>
 <style>
-  <!-- 4. ✅ CSS STYLES TO ADD (put inside your <style> block) -->
-<style>
-.branding-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 900px;
-  margin: 10px auto 30px auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
-
-.logo {
-  height: auto;
-  max-height: 55px;
-  max-width: 40%;
-  object-fit: contain;
-}
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    html, body {
-      width: 100%;
-      overflow-x: hidden;
-    }
-    body {
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #1a0033, #2d1b69, #4a148c);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      color: #fff;
-      animation: backgroundShimmer 15s ease-in-out infinite;
-    }
-    @keyframes backgroundShimmer {
-      0%, 100% { background: linear-gradient(135deg, #1a0033, #2d1b69, #4a148c); }
-      50%     { background: linear-gradient(135deg, #2d1b69, #4a148c, #6a1b9a); }
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .header h1 {
-      font-size: clamp(1.8rem, 5vw, 2.5rem);
-      background: linear-gradient(45deg, #ffd700, #ff6b35);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-      animation: titlePulse 3s ease-in-out infinite;
-    }
-    @keyframes titlePulse {
-      0%, 100% { transform: scale(1); }
-      50%      { transform: scale(1.05); }
-    }
-    .game-info {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: clamp(10px, 3vw, 20px);
-      margin-bottom: 20px;
-      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-    }
-    .score, .moves, .timer, .hints-remaining {
-      background: rgba(255, 255, 255, 0.1);
-      padding: clamp(8px, 2vw, 10px) clamp(15px, 4vw, 20px);
-      border-radius: 10px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .hints-remaining {
-      background: rgba(255, 215, 0, 0.2);
-      border-color: rgba(255, 215, 0, 0.4);
-    }
-    .game-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(clamp(80px, 12vw, 120px), 1fr));
-      gap: clamp(5px, 2vw, 15px);
-      max-width: 95vw;
-      width: 100%;
-      margin-bottom: 20px;
-      justify-content: center;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-    .card {
-      width: 100%;
-      aspect-ratio: 3/4;
-      position: relative;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-      max-width: 160px;
-      max-height: 220px;
-    }
-    .card:hover {
-      transform: scale(1.05) rotateZ(2deg);
-    }
-    .card-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      text-align: center;
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-    }
-    .card.flipped .card-inner {
-      transform: rotateY(180deg);
-    }
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: 15px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      border: 2px solid #ffd700;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-    .card-front {
-      background: linear-gradient(135deg, #2a0845, #4a148c);
-      color: #ffd700;
-      transform: rotateY(180deg);
-      padding: 5px;
-    }
-    .card-back {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #000000, #ffffff);
-      border-radius: 4px;
-      padding: 5px;
-    }
-    .card-logo {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-    .card-image {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      border-radius: 10px;
-      margin-bottom: 5px;
-    }
-    .card-name {
-      font-size: clamp(0.6rem, 1.5vw, 0.9rem);
-      font-weight: bold;
-      text-align: center;
-      color: #fff;
-      line-height: 1.1;
-      padding: 0 5px;
-    }
-    .card.matched {
-      opacity: 0.6;
-      transform: scale(0.9);
-      animation: matchedBounce 0.6s ease-out;
-    }
-    @keyframes matchedBounce {
-      0%   { transform: scale(1) rotateZ(0deg); }
-      50%  { transform: scale(1.2) rotateZ(5deg); }
-      100% { transform: scale(0.9) rotateZ(0deg); }
-    }
-    .card.hint-glow {
-      animation: hintGlow 2s ease-in-out;
-      z-index: 10;
-    }
-    @keyframes hintGlow {
-      0%, 100% {
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        transform: scale(1);
-      }
-      50% {
-        box-shadow: 0 0 30px #ffd700, 0 0 50px #ffd700;
-        transform: scale(1.05);
-      }
-    }
-    .controls {
-      display: flex;
-      gap: 15px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: clamp(0.9rem, 2.5vw, 1rem);
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      background: linear-gradient(45deg, #ff6b35, #ffd700);
-      color: #1a0033;
-      min-width: 120px;
-      position: relative;
-      overflow: hidden;
-    }
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
-    }
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-      transition: left 0.5s;
-    }
-    .btn:hover::before {
-      left: 100%;
-    }
-    .victory-message {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.9);
-      color: #ffd700;
-      padding: 30px;
-      border-radius: 15px;
-      text-align: center;
-      font-size: clamp(1rem, 3vw, 1.5rem);
-      display: none;
-      z-index: 1000;
-      max-width: 90%;
-      width: 400px;
-      animation: victoryPop 0.6s ease-out;
-    }
-    @keyframes victoryPop {
-      0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
-      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    }
-    .difficulty-selector {
-      margin-bottom: 20px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .difficulty-selector select {
-      padding: 8px 15px;
-      border-radius: 5px;
-      border: none;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      font-size: clamp(0.9rem, 2.5vw, 1rem);
-    }
-    .player-name-input {
-      margin-bottom: 20px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .player-name-input input {
-      padding: 8px 15px;
-      border-radius: 5px;
-      border: none;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      font-size: clamp(0.9rem, 2.5vw, 1rem);
-      min-width: 150px;
-    }
-    .high-scores {
-      margin-top: 30px;
-      width: 100%;
-      max-width: 600px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 20px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .high-scores h2 {
-      text-align: center;
-      margin-bottom: 15px;
-      color: #ffd700;
-      font-size: clamp(1.2rem, 3vw, 1.5rem);
-    }
-    .high-scores table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .high-scores th, .high-scores td {
-      padding: clamp(4px, 1.5vw, 8px);
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      font-size: clamp(0.7rem, 2vw, 0.9rem);
-    }
-    .high-scores th {
-      color: #ff6b35;
-    }
-    .audio-controls {
-      margin: 20px 0;
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 15px;
-      border-radius: 10px;
-      backdrop-filter: blur(10px);
-    }
-    .audio-controls button {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 5px;
-      background: rgba(255, 107, 53, 0.8);
-      color: white;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .audio-controls button:hover {
-      background: rgba(255, 107, 53, 1);
-      transform: translateY(-1px);
-    }
-    .streak-indicator {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(255, 215, 0, 0.9);
-      color: #1a0033;
-      padding: 10px 15px;
-      border-radius: 20px;
-      font-weight: bold;
-      transform: translateX(100px);
-      opacity: 0;
-      transition: all 0.5s ease;
-      z-index: 100;
-    }
-    .streak-indicator.show {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    @media (max-width: 768px) {
-      body {
-        padding: 10px;
-      }
-      .game-container {
-        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-        gap: 6px;
-        padding: 5px;
-        max-width: 98vw;
-      }
-      .card {
-        max-width: 120px;
-        max-height: 160px;
-      }
-      .controls {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-      }
-      .btn {
-        width: 80%;
-        max-width: 200px;
-      }
-      .player-name-input,
-      .difficulty-selector {
-        flex-direction: column;
-        text-align: center;
-      }
-      .player-name-input input,
-      .difficulty-selector select {
-        width: 100%;
-        max-width: 200px;
-      }
-      .streak-indicator {
-        top: 10px;
-        right: 10px;
-        font-size: 0.9rem;
-      }
-    }
-    @media (max-width: 480px) {
-      .game-container {
-        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-        gap: 4px;
-      }
-      .card {
-        max-width: 90px;
-        max-height: 120px;
-      }
-      .game-info {
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-      }
-    }
-  
-.intro-modal .modal-content .btn, .intro-modal .modal-content button {
-    display: block;
-    width: 80%;
-    max-width: 250px;
-    margin: 10px auto;
-    padding: 12px 20px;
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  html, body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1a0033, #2d1b69, #4a148c);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    color: #fff;
+    animation: backgroundShimmer 15s ease-in-out infinite;
+  }
+  @keyframes backgroundShimmer {
+    0%, 100% { background: linear-gradient(135deg, #1a0033, #2d1b69, #4a148c); }
+    50%     { background: linear-gradient(135deg, #2d1b69, #4a148c, #6a1b9a); }
+  }
+  .branding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    margin: 10px auto 30px auto;
+    padding: 0 20px;
+  }
+  .logo {
+    height: auto;
+    max-height: 55px;
+    max-width: 40%;
+    object-fit: contain;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .header h1 {
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    background: linear-gradient(45deg, #ffd700, #ff6b35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    animation: titlePulse 3s ease-in-out infinite;
+  }
+  @keyframes titlePulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+  }
+  .intro-modal, .game-menu {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 11000;
+  }
+  .intro-modal {
+    flex-direction: column;
+    padding: 30px;
+  }
+  .intro-modal .modal-content, .game-menu .menu-content {
+    max-width: 400px;
+    background: #222;
+    border-radius: 15px;
+    padding: 30px 30px 40px;
+    text-align: center;
+    color: #fff;
+    box-shadow: 0 0 50px #ff6b35cc;
+    position: relative;
+  }
+  .intro-modal h2, .game-menu h2 {
+    color: #ffd700;
+    margin-bottom: 20px;
+  }
+  .intro-modal p {
+    margin-bottom: 25px;
+    font-size: 1.2rem;
+  }
+  .btn {
+    background: linear-gradient(45deg, #ff6b35, #ffd700);
+    color: #1a0033;
+    border: none;
+    padding: 14px 25px;
+    border-radius: 10px;
+    font-weight: bold;
     font-size: 1rem;
-}
-
-.header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-}
-.header p {
-  margin: 0;
-}
-</style>
-<style>
-.branding-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 900px;
-  margin: 10px auto 30px auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
-
-.logo {
-  height: auto;
-  max-height: 50px;
-  max-width: 40%;
-  object-fit: contain;
-}
-
-.footer-links {
-  margin-top: 20px;
-  text-align: center;
-  font-size: 2rem;
-  opacity: 0.85;
-}
-
-.footer-links a {
-  color: #ffd700;
-  text-decoration: none;
-  margin: 0 10px;
-  transition: color 0.3s ease;
-}
-
-.footer-links a:hover {
-  color: #ffffff;
-}
-
-.intro-modal {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-}
-
-.modal-content {
-  text-align: center;
-  background: #222;
-  padding: 40px;
-  border-radius: 12px;
-  color: #fff;
-  max-width: 90%;
-}
-
-.modal-content h2 {
-  color: #ffd700;
-}
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn:hover {
+    box-shadow: 0 0 15px #ff6b35;
+    transform: translateY(-3px);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s;
+    z-index: 2;
+  }
+  .btn:hover::before {
+    left: 100%;
+  }
+  label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: 600;
+  }
+  input[type="text"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    box-shadow: inset 0 0 3px #000;
+    transition: background 0.25s ease;
+  }
+  input[type="text"]:focus, select:focus {
+    outline: none;
+    background: rgba(255,215,0,0.3);
+  }
+  .game-menu {
+    background: rgba(26, 0, 51, 0.95);
+    flex-direction: column;
+    color: #fff;
+  }
+  .game-menu .menu-content {
+    max-width: 420px;
+    padding: 25px 30px 40px;
+    box-shadow: 0 0 40px #ffd700aa;
+  }
+  .game-menu label {
+    font-weight: 700;
+    margin-top: 15px;
+  }
+  .game-info {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: clamp(12px, 3vw, 24px);
+    margin-bottom: 20px;
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+  }
+  .game-info > div {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    user-select: none;
+    min-width: 120px;
+    font-weight: 600;
+  }
+  .score.pc-score {
+    color: #ffb700;
+  }
+  .turn-indicator {
+    font-size: 1.3rem;
+    font-weight: 900;
+    text-align: center;
+    color: #ffd700;
+    margin-bottom: 20px;
+    letter-spacing: 0.06em;
+    text-shadow:
+      0 0 5px #ffad00,
+      0 0 15px #ffad00,
+      0 0 25px #ffae00dd;
+    animation: turnGlow 2.5s ease-in-out infinite;
+  }
+  @keyframes turnGlow {
+    0%, 100% {
+      text-shadow:
+        0 0 5px #ffad00,
+        0 0 15px #ffad00,
+        0 0 25px #ffae00dd;
+      color: #ffd700;
+    }
+    50% {
+      text-shadow:
+        0 0 15px #fff3ab,
+        0 0 35px #fff3ab,
+        0 0 55px #fff3abdd;
+      color: #fff3ab;
+    }
+  }
+  .game-container {
+    display: grid;
+    gap: clamp(7px, 2vw, 15px);
+    justify-content: center;
+    max-width: 95vw;
+    width: 100%;
+    margin-bottom: 25px;
+  }
+  .game-container.easy {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .game-container.medium {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .game-container.hard {
+    grid-template-columns: repeat(8, 1fr);
+  }
+  .game-container.crazy {
+    grid-template-columns: repeat(12, 1fr);
+  }
+  .card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    max-width: 160px;
+    max-height: 220px;
+    cursor: pointer;
+    perspective: 850px;
+    box-shadow:
+      0 5px 15px rgba(255, 107, 53, 0.15),
+      0 2px 8px rgba(0,0,0,0.7);
+    border-radius: 15px;
+    overflow: hidden;
+    user-select: none;
+    transition: transform 0.2s ease;
+  }
+  .card:hover:not(.flipped):not(.matched) {
+    transform: scale(1.05) rotateZ(3deg);
+  }
+  .card.matched {
+    opacity: 0.5;
+    cursor: default;
+    animation: matchedBounce 0.8s ease forwards;
+  }
+  @keyframes matchedBounce {
+    0% { transform: scale(1) rotateZ(0deg); }
+    50% { transform: scale(1.15) rotateZ(7deg); }
+    100% { transform: scale(0.9) rotateZ(0deg); }
+  }
+  .card.hint-glow {
+    animation: hintGlow 2s ease-in-out;
+    box-shadow: 0 0 16px 3px #ffd700cc;
+  }
+  @keyframes hintGlow {
+    0%, 100% {
+      box-shadow: 0 0 15px 3px #ffd700cc;
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 40px 10px #ffde00cc;
+      transform: scale(1.07);
+    }
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    border-radius: 15px;
+  }
+  .card.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+  .card-front, .card-back {
+    position: absolute;
+    border-radius: 15px;
+    backface-visibility: hidden;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid #ffd700;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .card-front {
+    background: linear-gradient(135deg, #3a0a7c, #7737c3);
+    color: #fff;
+    padding: 5px;
+    transform: rotateY(180deg);
+  }
+  .card-front img {
+    width: 80%;
+    border-radius: 15px;
+    object-fit: contain;
+  }
+  .card-back {
+    background: linear-gradient(135deg, #000, #fff);
+    filter: grayscale(90%) brightness(80%);
+    padding: 6px;
+  }
+  .card-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .controls {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .victory-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(25,25,25, 0.95);
+    color: #ffd700;
+    padding: 30px 35px;
+    border-radius: 20px;
+    text-align: center;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    display: none;
+    z-index: 10500;
+    max-width: 90vw;
+    width: 420px;
+    box-shadow:
+      0 0 20px 6px #ffab00dd,
+      0 0 40px 13px #ffd700aa;
+    animation: victoryPop 0.6s ease-out forwards;
+  }
+  @keyframes victoryPop {
+    0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+  .victory-message h2 {
+    font-size: 2.25rem;
+    margin-bottom: 15px;
+    text-shadow:
+      0 0 10px #ffcc00dd,
+      0 0 20px #ffcc00dd;
+  }
+  .victory-message p {
+    margin-bottom: 20px;
+  }
+  .victory-message em {
+    font-style: italic;
+    font-weight: 700;
+  }
+  .victory-message button {
+    margin-top: 15px;
+  }
+  .streak-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 215, 0, 0.9);
+    color: #1a0033;
+    padding: 10px 15px;
+    border-radius: 25px;
+    font-weight: bold;
+    transform: translateX(120px);
+    opacity: 0;
+    z-index: 1200;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    pointer-events: none;
+  }
+  .streak-indicator.show {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  .audio-controls {
+    margin: 20px 0;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 15px 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+  }
+  .audio-controls button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #ff6b35cc;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .audio-controls button:hover {
+    background: #ff6b35;
+    transform: translateY(-1px);
+  }
+  .audio-controls label {
+    font-weight: 600;
+    user-select: none;
+  }
+  .audio-controls input[type=range] {
+    width: 110px;
+  }
+  @media (max-width: 768px) {
+    body {
+      padding: 12px;
+    }
+    .game-container.easy { grid-template-columns: repeat(4, 1fr); }
+    .game-container.medium { grid-template-columns: repeat(4, 1fr); }
+    .game-container.hard { grid-template-columns: repeat(5, 1fr); }
+    .game-container.crazy { grid-template-columns: repeat(6, 1fr); }
+    .card {
+      max-width: 120px;
+      max-height: 180px;
+    }
+  }
+  @media (max-width: 480px) {
+    .game-container.easy { grid-template-columns: repeat(3, 1fr); }
+    .game-container.medium { grid-template-columns: repeat(4, 1fr); }
+    .game-container.hard { grid-template-columns: repeat(4, 1fr); }
+    .game-container.crazy { grid-template-columns: repeat(5, 1fr); }
+    .card {
+      max-width: 90px;
+      max-height: 135px;
+    }
+  }
 </style>
 </head>
-<body><div class="header branding-inline"><img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/><h1>⚔️ Conclave Arcana Memory Game ⚔️</h1><p>Match the character images!</p><img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/></div>
-<!-- 1. ✅ HEADER BRANDING SECTION -->
-<!-- 2. ✅ FOOTER BRANDING LINKS -->
+<body>
+<div class="header branding-inline">
+  <img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/>
+  <h1>⚔️ Conclave Arcana Memory Game ⚔️</h1>
+  <p>Match the character images!</p>
+  <img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/>
+</div>
+
 <footer class="footer-links">
-<p>
-<a href="https://splinterlands.com" target="_blank">🌐 Play Splinterlands</a> |
+  <p>
+    <a href="https://splinterlands.com" target="_blank">🌐 Play Splinterlands</a> |
     <a href="https://discord.gg/pkuTQBVR" target="_blank">💬 Join Discord</a>
-</p>
+  </p>
 </footer>
-<!-- 3. ✅ OPTIONAL INTRO SPLASH (Place near start of <body>) -->
-<div class="intro-modal" id="introModal">
-<div class="modal-content">
-<h2>✨ Welcome to Conclave Arcana Memory Game</h2>
-<p>A Splinterlands Universe Game</p>
-<a class="btn" href="https://splinterlands.com" target="_blank">Visit Splinterlands</a>
-<button onclick="closeIntroModal()">Enter Game</button>
+
+<div class="intro-modal" id="introModal" role="dialog" aria-labelledby="introTitle" aria-modal="true" aria-describedby="introDesc">
+  <div class="modal-content">
+    <h2 id="introTitle">✨ Welcome to Conclave Arcana Memory Game</h2>
+    <p id="introDesc">A Splinterlands Universe Game</p>
+    <a class="btn" href="https://splinterlands.com" target="_blank" rel="noopener noreferrer">Visit Splinterlands</a>
+    <button class="btn" id="enterGameBtn" aria-label="Enter Game">Enter Game</button>
+  </div>
 </div>
+
+<div class="game-menu" id="gameMenu" role="region" aria-label="Game Settings" style="display:none;">
+  <div class="menu-content">
+    <h2>Game Settings</h2>
+    <label for="playerName"><strong>Your Name:</strong></label>
+    <input type="text" id="playerName" placeholder="Enter your name" autocomplete="off" />
+
+    <label for="modeSelect"><strong>Game Mode:</strong></label>
+    <select id="modeSelect" title="Select Game Mode">
+      <option value="single" selected>Single Player</option>
+      <option value="vsportia">VS Portia (PC)</option>
+    </select>
+
+    <label for="difficulty"><strong>Difficulty:</strong></label>
+    <select id="difficulty">
+      <option value="easy">Easy (16 cards)</option>
+      <option value="medium">Medium (36 cards)</option>
+      <option value="hard">Hard (64 cards)</option>
+      <option value="crazy">Crazy (144 cards)</option>
+    </select>
+
+    <button class="btn" id="startGameBtn" aria-label="Start Game">Start Game</button>
+  </div>
 </div>
-<!-- 1. ✅ HEADER BRANDING SECTION -->
-<div class="player-name-input">
-<label for="playerName">Your Name: </label>
-<input id="playerName" placeholder="Enter your name" type="text"/>
+
+<div class="game-info" style="display:none;" aria-live="polite" aria-atomic="true" aria-relevant="text">
+  <div class="score">Player Score: <span id="score">0</span></div>
+  <div class="score pc-score" style="display:none;">Portia's Score: <span id="pcScore">0</span></div>
+  <div class="moves">Moves: <span id="moves">0</span></div>
+  <div class="timer">Time: <span id="timer">00:00</span></div>
+  <div class="hints-remaining">Hints: <span id="hintsRemaining">2</span></div>
 </div>
-<div class="difficulty-selector">
-<label for="difficulty">Difficulty: </label>
-<select id="difficulty">
-<option value="easy">Easy (16 cards)</option>
-<option selected="" value="medium">Medium (36 cards)</option>
-<option value="hard">Hard (64 cards)</option>
-<option value="crazy">Crazy (144 cards)</option>
-</select>
+
+<div class="turn-indicator" id="turnIndicator" style="display:none;" aria-live="assertive" aria-atomic="true" aria-relevant="text"></div>
+
+<div class="streak-indicator" id="streakIndicator" role="alert" aria-atomic="true">
+  🔥 Streak: <span id="streakCount">0</span>
 </div>
-<div class="game-info">
-<div class="score">Score: <span id="score">0</span></div>
-<div class="moves">Moves: <span id="moves">0</span></div>
-<div class="timer">Time: <span id="timer">00:00</span></div>
-<div class="hints-remaining">Hints: <span id="hintsRemaining">2</span></div>
+
+<div class="game-container" id="gameContainer" aria-label="Memory Game Board" role="grid" tabindex="0" style="display:none;">
 </div>
-<div class="streak-indicator" id="streakIndicator">
-    🔥 Streak: <span id="streakCount">0</span>
+
+<div class="controls" style="display:none;">
+  <button class="btn" id="newGameBtn" aria-label="New Game">New Game</button>
+  <button class="btn" id="hintBtn" aria-label="Hint Button">Hint (Costs 10 pts)</button>
 </div>
-<div class="game-container" id="gameContainer">
-<!-- Cards will be generated here -->
+
+<div class="audio-controls" style="display:none;">
+  <button id="muteBtn" aria-pressed="false" aria-label="Toggle Mute">Mute</button>
+  <label for="musicVolume">Music Volume:</label>
+  <input id="musicVolume" max="1" min="0" step="0.01" type="range" value="0.5" />
+  <label for="sfxVolume">SFX Volume:</label>
+  <input id="sfxVolume" max="1" min="0" step="0.01" type="range" value="1" />
 </div>
-<div class="controls">
-<button class="btn" onclick="newGame()">New Game</button>
-<button class="btn" id="hintBtn" onclick="showHint()">Hint (Costs 10 pts)</button>
+
+<div class="victory-message" id="victoryMessage" role="alert" aria-live="assertive" aria-atomic="true">
+  <h2>🎉 Victory! 🎉</h2>
+  <p id="victoryText"></p>
+  <button class="btn" id="playAgainBtn" aria-label="Play Again">Play Again</button>
 </div>
-<div class="audio-controls">
-<button id="muteBtn">Mute</button>
-<label for="musicVolume">Music Volume:</label>
-<input id="musicVolume" max="1" min="0" step="0.01" type="range" value="0.5"/>
-<label for="sfxVolume">SFX Volume:</label>
-<input id="sfxVolume" max="1" min="0" step="0.01" type="range" value="1"/>
-</div>
-<div class="victory-message" id="victoryMessage">
-<h2>🎉 Victory! 🎉</h2>
-<p id="victoryText"></p>
-<button class="btn" onclick="hideVictory()">Play Again</button>
-</div>
-<div class="high-scores">
-<h2>🏆 High Scores 🏆</h2>
-<table id="highScoresTable">
-<thead>
-<tr>
-<th>Rank</th>
-<th>Name</th>
-<th>Score</th>
-<th>Difficulty</th>
-<th>Time</th>
-</tr>
-</thead>
-<tbody id="highScoresBody">
-<!-- High scores will be loaded here -->
-</tbody>
-</table>
-</div>
+
 <script>
-    const music = {
-      themes: [
-        new Audio('sounds/Fire of Praetoria.mp3'),
-        new Audio('sounds/The Talisman.mp3'),
-        new Audio('sounds/War Begins.mp3')
-      ],
-      currentTheme: null,
-      isPlaying: false,
-      init() {
-        this.themes.forEach(theme => {
-          theme.loop = true;
-          theme.volume = 0.5;
+  // Sound and music setup
+  const music = {
+    themes: [
+      new Audio('sounds/Fire of Praetoria.mp3'),
+      new Audio('sounds/The Talisman.mp3'),
+      new Audio('sounds/War Begins.mp3')
+    ],
+    currentTheme: null,
+    isPlaying: false,
+    init() {
+      this.themes.forEach(theme => {
+        theme.loop = true;
+        theme.volume = 0.5;
+      });
+    },
+    playRandom() {
+      if (this.currentTheme) {
+        this.fadeOut(this.currentTheme, 1000, () => {
+          this.currentTheme.pause();
+          this.currentTheme.currentTime = 0;
         });
-      },
-      playRandom() {
-        if (this.currentTheme) {
-          this.fadeOut(this.currentTheme, 1000, () => {
-            this.currentTheme.pause();
-            this.currentTheme.currentTime = 0;
-          });
-        }
-        let availableThemes = this.themes.filter(t => t !== this.currentTheme);
-        this.currentTheme = availableThemes[Math.floor(Math.random() * availableThemes.length)];
-        this.currentTheme.currentTime = 0;
-        this.currentTheme.volume = 0;
-        this.currentTheme.play();
-        this.fadeIn(this.currentTheme, 1500);
-        this.isPlaying = true;
-      },
-      fadeOut(audio, duration, callback) {
-        const fadeInterval = 50;
-        const steps = duration / fadeInterval;
-        const stepSize = audio.volume / steps;
-        const fade = setInterval(() => {
-          if (audio.volume > stepSize) {
-            audio.volume -= stepSize;
-          } else {
-            audio.volume = 0;
-            clearInterval(fade);
-            if (callback) callback();
-          }
-        }, fadeInterval);
-      },
-      fadeIn(audio, duration) {
-        const targetVolume = 0.5;
-        const fadeInterval = 50;
-        const steps = duration / fadeInterval;
-        const stepSize = targetVolume / steps;
-        audio.volume = 0;
-        const fade = setInterval(() => {
-          if (audio.volume < targetVolume - stepSize) {
-            audio.volume += stepSize;
-          } else {
-            audio.volume = targetVolume;
-            clearInterval(fade);
-          }
-        }, fadeInterval);
-      },
-      toggle() {
-        if (this.isPlaying) {
-          this.fadeOut(this.currentTheme, 800);
+      }
+      let availableThemes = this.themes.filter(t => t !== this.currentTheme);
+      this.currentTheme = availableThemes[Math.floor(Math.random() * availableThemes.length)];
+      this.currentTheme.currentTime = 0;
+      this.currentTheme.volume = 0;
+      this.currentTheme.play();
+      this.fadeIn(this.currentTheme, 1500);
+      this.isPlaying = true;
+    },
+    fadeOut(audio, duration, callback) {
+      const fadeInterval = 50;
+      const steps = duration / fadeInterval;
+      const stepSize = audio.volume / steps;
+      const fade = setInterval(() => {
+        if (audio.volume > stepSize) {
+          audio.volume -= stepSize;
         } else {
-          this.fadeIn(this.currentTheme, 800);
+          audio.volume = 0;
+          clearInterval(fade);
+          if(callback) callback();
         }
-        this.isPlaying = !this.isPlaying;
-      }
-    };
-
-    const sounds = {
-      flip: new Audio('sounds/flip.wav'),
-      correct: new Audio('sounds/correct.wav'),
-      fourinarow: new Audio('sounds/winnerwinner.mp3'),
-      complete: new Audio('sounds/complete.mp3'),
-      keeptrying: new Audio('sounds/keeptrying.mp3'),
-      pickle: new Audio('sounds/extrapickles.wav'),
-      ohno1: new Audio('sounds/ohno.mp3'),
-      ohno2: new Audio('sounds/ohno2.wav'),
-      threeinarow: new Audio('sounds/threeinarow.mp3'),
-      twoinarow: new Audio('sounds/twoinarow.mp3'),
-      unstoppable: new Audio('sounds/unstoppable.mp3'),
-      victory: new Audio('sounds/victory.mp3'),
-      extrapickup: new Audio('sounds/extrapickup.wav'),
-      heartbeat: new Audio('sounds/heartbeat.mp3'),
-      ohyeah: new Audio('sounds/ohyeah.wav'),
-      nopressure: new Audio('sounds/nopressure.mp3'),
-      areyoutrying: new Audio('sounds/areyoutrying.mp3')
-    };
-    Object.values(sounds).forEach(sound => sound.volume = 0.5);
-    music.init();
-
-    const muteBtn = document.getElementById('muteBtn');
-    const musicVolumeSlider = document.getElementById('musicVolume');
-    const sfxVolumeSlider = document.getElementById('sfxVolume');
-    let isMuted = false;
-
-    function updateSFXVolume(volume) {
-      Object.values(sounds).forEach(sound => sound.volume = volume);
-    }
-    function updateMusicVolume(volume) {
-      music.themes.forEach(theme => theme.volume = volume);
-    }
-    muteBtn.addEventListener('click', () => {
-      isMuted = !isMuted;
-      if (isMuted) {
-        updateMusicVolume(0);
-        updateSFXVolume(0);
-        muteBtn.textContent = 'Unmute';
+      }, fadeInterval);
+    },
+    fadeIn(audio, duration) {
+      const targetVolume = 0.5;
+      const fadeInterval = 50;
+      const steps = duration / fadeInterval;
+      const stepSize = targetVolume / steps;
+      audio.volume = 0;
+      const fade = setInterval(() => {
+        if (audio.volume < targetVolume - stepSize) {
+          audio.volume += stepSize;
+        } else {
+          audio.volume = targetVolume;
+          clearInterval(fade);
+        }
+      }, fadeInterval);
+    },
+    toggle() {
+      if(this.isPlaying) {
+        this.fadeOut(this.currentTheme, 800);
       } else {
-        const musicVol = parseFloat(musicVolumeSlider.value);
-        const sfxVol = parseFloat(sfxVolumeSlider.value);
-        updateMusicVolume(musicVol);
-        updateSFXVolume(sfxVol);
-        muteBtn.textContent = 'Mute';
+        this.fadeIn(this.currentTheme, 800);
       }
-    });
-    musicVolumeSlider.addEventListener('input', e => {
-      if (!isMuted) {
-        updateMusicVolume(parseFloat(e.target.value));
-      }
-    });
-    sfxVolumeSlider.addEventListener('input', e => {
-      if (!isMuted) {
-        updateSFXVolume(parseFloat(e.target.value));
-      }
-    });
-
-    function startMusicOnFirstInteraction() {
-      function playOnce() {
-        music.playRandom();
-        window.removeEventListener('click', playOnce);
-        window.removeEventListener('keydown', playOnce);
-        window.removeEventListener('touchstart', playOnce);
-      }
-      window.addEventListener('click', playOnce);
-      window.addEventListener('keydown', playOnce);
-      window.addEventListener('touchstart', playOnce);
+      this.isPlaying = !this.isPlaying;
     }
-    startMusicOnFirstInteraction();
+  };
+
+  const sounds = {
+    flip: new Audio('sounds/flip.wav'),
+    correct: new Audio('sounds/correct.wav'),
+    fourinarow: new Audio('sounds/winnerwinner.mp3'),
+    complete: new Audio('sounds/complete.mp3'),
+    keeptrying: new Audio('sounds/keeptrying.mp3'),
+    pickle: new Audio('sounds/extrapickles.wav'),
+    ohno1: new Audio('sounds/ohno.mp3'),
+    ohno2: new Audio('sounds/ohno2.wav'),
+    threeinarow: new Audio('sounds/threeinarow.mp3'),
+    twoinarow: new Audio('sounds/twoinarow.mp3'),
+    unstoppable: new Audio('sounds/unstoppable.mp3'),
+    victory: new Audio('sounds/victory.mp3'),
+    extrapickup: new Audio('sounds/extrapickup.wav'),
+    heartbeat: new Audio('sounds/heartbeat.mp3'),
+    ohyeah: new Audio('sounds/ohyeah.wav'),
+    nopressure: new Audio('sounds/nopressure.mp3'),
+    areyoutrying: new Audio('sounds/areyoutrying.mp3')
+  };
+  Object.values(sounds).forEach(snd => snd.volume = 0.5);
+  music.init();
+
+  const muteBtn = document.getElementById('muteBtn');
+  const musicVolumeSlider = document.getElementById('musicVolume');
+  const sfxVolumeSlider = document.getElementById('sfxVolume');
+  let isMuted = false;
+
+  muteBtn.addEventListener('click', () => {
+    isMuted = !isMuted;
+    if(isMuted) {
+      updateMusicVolume(0);
+      updateSFXVolume(0);
+      muteBtn.textContent = 'Unmute';
+      muteBtn.setAttribute('aria-pressed','true');
+    } else {
+      updateMusicVolume(parseFloat(musicVolumeSlider.value));
+      updateSFXVolume(parseFloat(sfxVolumeSlider.value));
+      muteBtn.textContent = 'Mute';
+      muteBtn.setAttribute('aria-pressed','false');
+    }
+  });
+  musicVolumeSlider.addEventListener('input', e => {
+    if(!isMuted) updateMusicVolume(parseFloat(e.target.value));
+  });
+  sfxVolumeSlider.addEventListener('input', e => {
+    if(!isMuted) updateSFXVolume(parseFloat(e.target.value));
+  });
+
+  function updateMusicVolume(vol) {
+    music.themes.forEach(t => t.volume = vol);
+  }
+  function updateSFXVolume(vol) {
+    Object.values(sounds).forEach(snd => snd.volume = vol);
+  }
+
+  function startMusicOnFirstInteraction() {
+    function playOnce() {
+      music.playRandom();
+      window.removeEventListener('click', playOnce);
+      window.removeEventListener('keydown', playOnce);
+      window.removeEventListener('touchstart', playOnce);
+    }
+    window.addEventListener('click', playOnce);
+    window.addEventListener('keydown', playOnce);
+    window.addEventListener('touchstart', playOnce);
+  }
+  startMusicOnFirstInteraction();
 
     const conclaveCharacters = [
       { name: "Janni Oracle", image: "Janni Oracle.png" },
@@ -800,375 +758,531 @@
       { name: "Inept Healer", image: "Inept Healer.png" }
     ];
 
-    let gameState = {
-      cards: [],
-      flippedCards: [],
-      matchedPairs: 0,
-      moves: 0,
-      score: 0,
-      timer: 0,
-      gameStarted: false,
-      timerInterval: null,
-      difficulty: 'medium',
-      playerName: '',
-      hintsRemaining: 2,
-      consecutiveMatches: 0,
-      recentMismatches: 0,
-      usedHintThisTurn: false
-    };
+  const difficulties = {
+    easy: { pairs: 8, grid: 4 },
+    medium: { pairs: 18, grid: 6 },
+    hard: { pairs: 32, grid: 8 },
+    crazy: { pairs: 72, grid: 12 }
+  };
 
-    const difficulties = {
-      easy: { pairs: 8, grid: 4 },
-      medium: { pairs: 18, grid: 6 },
-      hard: { pairs: 32, grid: 8 },
-      crazy: { pairs: 72, grid: 12 }
-    };
+  let isVsPcMode = false;
+  let playerScore = 0;
+  let pcScore = 0;
+  let currentTurn = 'player';
+  let flippedCards = [];
+  let matchedPairs = 0;
+  let hintsRemaining = 2;
+  let moves = 0;
+  let timer = 0;
+  let timerInterval = null;
+  let isLocked = false;
+  let pcMemory = new Map();
+  let cards = [];
 
-    window.onload = function() {
-      initGame();
-      loadHighScores();
-      document.getElementById('playerName').addEventListener('change', function() {
-        gameState.playerName = this.value;
-      });
-    };
+  // DOM Elements shortcuts
+  const introModal = document.getElementById('introModal');
+  const gameMenu = document.getElementById('gameMenu');
+  const startGameBtn = document.getElementById('startGameBtn');
+  const enterGameBtn = document.getElementById('enterGameBtn');
+  const newGameBtn = document.getElementById('newGameBtn');
+  const playerNameInput = document.getElementById('playerName');
+  const modeSelect = document.getElementById('modeSelect');
+  const difficultySelect = document.getElementById('difficulty');
+  const gameContainer = document.getElementById('gameContainer');
+  const turnIndicator = document.getElementById('turnIndicator');
+  const pcScoreElement = document.querySelector('.score.pc-score');
+  const streakIndicator = document.getElementById('streakIndicator');
+  const scoreElement = document.getElementById('score');
+  const pcScoreValue = document.getElementById('pcScore');
+  const movesElement = document.getElementById('moves');
+  const hintsRemainingElement = document.getElementById('hintsRemaining');
+  const timerElement = document.getElementById('timer');
+  const hintBtnElement = document.getElementById('hintBtn');
+  const victoryMessageContainer = document.getElementById('victoryMessage');
+  const victoryTextElement = document.getElementById('victoryText');
+  const playAgainBtn = document.getElementById('playAgainBtn');
 
-    function initGame() {
-      const difficulty = document.getElementById('difficulty').value;
-      gameState.difficulty = difficulty;
-      gameState.hintsRemaining = 2;
-      gameState.consecutiveMatches = 0;
-      gameState.recentMismatches = 0;
-      gameState.usedHintThisTurn = false;
+  // Functions to shuffle arrays
+  function shuffle(array) {
+    let arr = array.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
 
-      const pairCount = difficulties[difficulty].pairs;
-      const gridSize = difficulties[difficulty].grid;
-      const container = document.getElementById('gameContainer');
+  // Show intro modal
+  function showIntro() {
+    introModal.style.display = 'flex';
+    gameMenu.style.display = 'none';
+    gameContainer.style.display = 'none';
+    document.querySelector('.game-info').style.display = 'none';
+    document.querySelector('.controls').style.display = 'none';
+    document.querySelector('.audio-controls').style.display = 'none';
+    turnIndicator.style.display = 'none';
+    streakIndicator.style.display = 'none';
+    victoryMessageContainer.style.display = 'none';
+  }
 
-      const shuffledCharacters = [...conclaveCharacters];
-      for (let i = shuffledCharacters.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledCharacters[i], shuffledCharacters[j]] = [shuffledCharacters[j], shuffledCharacters[i]];
-      }
-      const selectedCharacters = shuffledCharacters.slice(0, pairCount);
+  // Show game menu
+  function showGameMenu() {
+    introModal.style.display = 'none';
+    gameMenu.style.display = 'block';
+  }
 
-      gameState.cards = [];
-      selectedCharacters.forEach((char, index) => {
-        gameState.cards.push(
-          { id: `img_${index}`, type: 'image', character: char, matchId: index },
-          { id: `name_${index}`, type: 'name', character: char, matchId: index }
-        );
-      });
+  // Show game UI
+  function showGameUI() {
+    gameMenu.style.display = 'none';
+    gameContainer.style.display = 'grid';
+    document.querySelector('.game-info').style.display = 'flex';
+    document.querySelector('.controls').style.display = 'flex';
+    document.querySelector('.audio-controls').style.display = 'flex';
+    streakIndicator.style.display = 'block';
 
-      for (let i = gameState.cards.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [gameState.cards[i], gameState.cards[j]] = [gameState.cards[j], gameState.cards[i]];
-      }
+    if (isVsPcMode) {
+      turnIndicator.style.display = 'block';
+    } else {
+      turnIndicator.style.display = 'none';
+    }
+  }
 
-      gameState.flippedCards = [];
-      gameState.matchedPairs = 0;
-      gameState.moves = 0;
-      gameState.score = 0;
-      gameState.timer = 0;
-      gameState.gameStarted = false;
-      if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+  enterGameBtn.addEventListener('click', () => {
+    showGameMenu();
+  });
 
-      updateDisplay();
-      renderCards();
+  // Main game start button event
+  startGameBtn.addEventListener('click', () => {
+    let nameVal = playerNameInput.value.trim();
+    if (!nameVal) {
+      alert('Please enter your name before starting the game.');
+      playerNameInput.focus();
+      return;
+    }
+    isVsPcMode = modeSelect.value === 'vsportia';
+
+    pcScoreElement.style.display = isVsPcMode ? 'inline-block' : 'none';
+
+    if (isVsPcMode) {
+      turnIndicator.style.display = 'block';
+      turnIndicator.textContent = 'Your turn';
+    } else {
+      turnIndicator.style.display = 'none';
     }
 
-    function renderCards() {
-      const container = document.getElementById('gameContainer');
-      container.innerHTML = '';
-      gameState.cards.forEach((card, index) => {
-        const cardElement = document.createElement('div');
-        cardElement.className = 'card';
-        cardElement.dataset.index = index;
-        cardElement.onclick = () => flipCard(index);
-        cardElement.innerHTML = `
-          <div class="card-inner">
-            <div class="card-front">
-              <img src="${card.character.image}" alt="${card.character.name}" class="card-image" />
-            </div>
-            <div class="card-back">
-              <img src="conclave-logo.png" alt="Conclave Arcana Logo" class="card-logo" />
-            </div>
+    showGameUI();
+    initializeGame();
+  });
+
+  newGameBtn.addEventListener('click', () => {
+    initializeGame();
+  });
+
+  playAgainBtn.addEventListener('click', () => {
+    victoryMessageContainer.style.display = 'none';
+    initializeGame();
+  });
+
+  hintBtnElement.addEventListener('click', () => {
+    if (hintsRemaining <= 0) {
+      alert("You're out of hints!");
+      return;
+    }
+    if (!isVsPcMode) {
+      alert("Flip one card first to get a hint for its match!");
+      return;
+    }
+    if (currentTurn !== 'player') {
+      alert("Wait for your turn to get a hint.");
+      return;
+    }
+    if (flippedCards.length !== 1) {
+      alert("Flip one card first to get a hint for its match!");
+      return;
+    }
+    const flippedCard = flippedCards[0];
+    const matchId = flippedCard.card.matchId;
+    let revealIdx = null;
+    for (let i = 0; i < cards.length; i++) {
+      if (cards[i].matchId === matchId && i !== flippedCard.index) {
+        const el = gameContainer.querySelector(`.card[data-index="${i}"]`);
+        if (el && !el.classList.contains('matched')) {
+          revealIdx = i;
+          break;
+        }
+      }
+    }
+    if (revealIdx === null) {
+      alert("No matching card found. Flip another card!");
+      return;
+    }
+    hintsRemaining--;
+    updateHints();
+    sounds.pickle.play();
+    const matchingElement = gameContainer.querySelector(`.card[data-index="${revealIdx}"]`);
+    matchingElement.classList.add('hint-glow');
+    setTimeout(() => {
+      matchingElement.classList.remove('hint-glow');
+    }, 1800);
+  });
+
+  // Initialize or reset the game state
+  function initializeGame() {
+    hintsRemaining = 2;
+    moves = 0;
+    timer = 0;
+    playerScore = 0;
+    pcScore = 0;
+    matchedPairs = 0;
+    flippedCards = [];
+    pcMemory.clear();
+    currentTurn = 'player';
+    isLocked = false;
+
+    updateScores();
+    updateMoves();
+    updateHints();
+    updateTimer();
+    setTurnIndicator('player');
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timer++;
+      updateTimer();
+    }, 1000);
+
+    const pairCount = difficulties[difficultySelect.value].pairs;
+
+    let shuffledChars = shuffle(conclaveCharacters).slice(0, pairCount);
+
+    cards = [];
+    shuffledChars.forEach((char, i) => {
+      cards.push(
+        { id: `img_${i}`, type: 'image', character: char, matchId: i },
+        { id: `name_${i}`, type: 'name', character: char, matchId: i }
+      );
+    });
+    cards = shuffle(cards);
+
+    renderCards();
+
+    if (isVsPcMode) {
+      pcScoreElement.style.display = 'inline-block';
+      turnIndicator.style.display = 'block';
+      pcScoreValue.textContent = pcScore;
+    } else {
+      pcScoreElement.style.display = 'none';
+      turnIndicator.style.display = 'none';
+    }
+    showGameUI();
+
+    if (isVsPcMode && currentTurn === 'pc') {
+      pcTurn();
+    }
+  }
+
+  // Render the cards on the board
+  function renderCards() {
+    gameContainer.innerHTML = '';
+    gameContainer.className = 'game-container ' + difficultySelect.value;
+    cards.forEach((card, i) => {
+      const cardElement = document.createElement('div');
+      cardElement.className = 'card';
+      cardElement.dataset.index = i;
+      cardElement.tabIndex = 0;
+      cardElement.setAttribute('role', 'button');
+      cardElement.setAttribute('aria-label', 'Face down card');
+      cardElement.onclick = () => onCardClick(i);
+      cardElement.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onCardClick(i);
+        }
+      };
+      cardElement.innerHTML = `
+        <div class="card-inner">
+          <div class="card-front">
+            <img src="${card.character.image}" alt="${card.character.name}" class="card-image" />
           </div>
-        `;
-        container.appendChild(cardElement);
-      });
-    }
-
-    function flipCard(index) {
-      if (!gameState.gameStarted) {
-        startTimer();
-        gameState.gameStarted = true;
-      }
-      const card = gameState.cards[index];
-      const cardElement = document.querySelector(`[data-index="${index}"]`);
-      if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return;
-      if (gameState.flippedCards.length >= 2) return;
-
-      sounds.flip.play();
-      cardElement.classList.add('flipped');
-      gameState.flippedCards.push({ index, card, element: cardElement });
-
-      if (gameState.flippedCards.length === 2) {
-        gameState.moves++;
-        updateDisplay();
-        setTimeout(() => {
-          checkMatch();
-          autoFlipLastTwoCards();
-        }, 1000);
-      }
-    }
-
-    function autoFlipLastTwoCards() {
-      const remainingIndexes = gameState.cards
-        .map((card, idx) => ({ card, idx }))
-        .filter(({ card, idx }) => {
-          const el = document.querySelector(`[data-index="${idx}"]`);
-          return !card.matched && !el.classList.contains('flipped');
-        })
-        .map(({ idx }) => idx);
-
-      if (remainingIndexes.length === 2) {
-        setTimeout(() => {
-          remainingIndexes.forEach(idx => flipCard(idx));
-          setTimeout(() => {
-            const unmatched = document.querySelectorAll('.card:not(.matched)');
-            if (unmatched.length === 0) {
-              gameWon();
-            }
-          }, 1200);
-        }, 500);
-      }
-    }
-
-    function checkMatch() {
-      const [card1, card2] = gameState.flippedCards;
-      if (card1.card.matchId === card2.card.matchId) {
-        card1.element.classList.add('matched');
-        card2.element.classList.add('matched');
-        gameState.matchedPairs++;
-
-        if (gameState.usedHintThisTurn) {
-          gameState.consecutiveMatches = 0;
-          gameState.usedHintThisTurn = false;
-        } else {
-          gameState.consecutiveMatches++;
-        }
-        gameState.recentMismatches = 0;
-
-        let basePoints = 100;
-        let bonus = 0;
-
-        if (gameState.consecutiveMatches >= 1) {
-          switch (gameState.consecutiveMatches) {
-            case 1:
-              sounds.correct.play();
-              break;
-            case 2:
-              bonus = 50;
-              sounds.twoinarow.play();
-              break;
-            case 3:
-              bonus = 150;
-              sounds.threeinarow.play();
-              break;
-            case 4:
-              bonus = 500;
-              if (sounds.fourinarow) {
-                sounds.fourinarow.play();
-              } else {
-                sounds.threeinarow.play();
-              }
-              break;
-            case 5:
-            default:
-              bonus = 1000;
-              sounds.unstoppable.play();
-              break;
-          }
-        }
-
-        gameState.score += basePoints + bonus;
-        if (bonus > 0) {
-          showBonusNotification(`🔥 Streak x${gameState.consecutiveMatches}! +${bonus} bonus`);
-        }
-
-        if (gameState.matchedPairs % 5 === 0) {
-          gameState.hintsRemaining++;
-          sounds.extrapickup.play();
-          showBonusNotification(`✨ Bonus Hint Earned! (${gameState.hintsRemaining} total)`);
-        }
-
-        if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
-          gameWon();
-        }
-      } else {
-        card1.element.classList.remove('flipped');
-        card2.element.classList.remove('flipped');
-        gameState.score -= 10;
-        gameState.consecutiveMatches = 0;
-        gameState.recentMismatches++;
-
-        // 30% chance to play one of the “mismatch” sounds:
-if (Math.random() < 0.3) {
-  const feedbackSounds = [
-    sounds.keeptrying,
-    sounds.ohno1,
-    sounds.ohno2,
-    sounds.heartbeat,
-    sounds.ohyeah,
-    sounds.nopressure,
-    sounds.areyoutrying
-  ];
-  const choice = feedbackSounds[
-    Math.floor(Math.random() * feedbackSounds.length)
-  ];
-  choice.play();
-}
-
-}
-
-      gameState.flippedCards = [];
-      updateDisplay();
-    }
-
-    function startTimer() {
-      gameState.timerInterval = setInterval(() => {
-        gameState.timer++;
-        updateDisplay();
-      }, 1000);
-    }
-
-    function updateDisplay() {
-      document.getElementById('score').textContent = gameState.score;
-      document.getElementById('moves').textContent = gameState.moves;
-      document.getElementById('hintsRemaining').textContent = gameState.hintsRemaining;
-      const minutes = Math.floor(gameState.timer / 60);
-      const seconds = gameState.timer % 60;
-      document.getElementById('timer').textContent =
-        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    function gameWon() {
-      clearInterval(gameState.timerInterval);
-      const bonusPoints = Math.max(0, 500 - (gameState.moves * 10) - (gameState.timer * 2));
-      gameState.score += bonusPoints;
-      sounds.victory.play();
-      document.getElementById('victoryText').innerHTML = `
-        <p>You matched all Characters!</p>
-        <p>Moves: ${gameState.moves}</p>
-        <p>Time: ${Math.floor(gameState.timer / 60)}:${(gameState.timer % 60).toString().padStart(2, '0')}</p>
-        <p>Final Score: ${gameState.score}</p>
+          <div class="card-back">
+            <img src="conclave-arcana-logo.png" alt="Conclave Arcana Logo" class="card-logo" />
+          </div>
+        </div>
       `;
-      document.getElementById('victoryMessage').style.display = 'block';
-      saveHighScore();
+      gameContainer.appendChild(cardElement);
+    });
+  }
+
+  // Card clicked
+  function onCardClick(index) {
+    if (isLocked) return;
+    if (isVsPcMode && currentTurn !== 'player') return;
+
+    const el = gameContainer.querySelector(`.card[data-index="${index}"]`);
+    if (!el) return;
+    if (el.classList.contains('flipped') || el.classList.contains('matched')) return;
+    if (flippedCards.length >= 2) return;
+
+    flipCardVisual(el);
+    sounds.flip.play();
+
+    flippedCards.push({ index, card: cards[index], element: el });
+
+    if (isVsPcMode) {
+      pcRemember(index, cards[index]);
     }
 
-    function hideVictory() {
-      document.getElementById('victoryMessage').style.display = 'none';
-      newGame();
+    if (flippedCards.length === 2) {
+      isLocked = true;
+      moves++;
+      updateMoves();
+      setTimeout(checkMatch, 1000);
     }
-    function newGame() {
-      initGame();
-    }
+  }
 
-    function showHint() {
-      if (gameState.hintsRemaining <= 0) {
-        alert("You're out of hints!");
+  function flipCardVisual(el) {
+    el.classList.add('flipped');
+    el.setAttribute('aria-label', 'Card face up');
+  }
+  function unflipCardVisual(el) {
+    el.classList.remove('flipped');
+    el.setAttribute('aria-label', 'Card face down');
+  }
+  function updateScores() {
+    scoreElement.textContent = playerScore;
+    pcScoreValue.textContent = pcScore;
+  }
+  function updateMoves() {
+    movesElement.textContent = moves;
+  }
+  function updateHints() {
+    hintsRemainingElement.textContent = hintsRemaining;
+  }
+  function updateTimer() {
+    let mm = Math.floor(timer / 60);
+    let ss = timer % 60;
+    timerElement.textContent = `${mm.toString().padStart(2, '0')}:${ss.toString().padStart(2, '0')}`;
+  }
+  function setTurnIndicator(turn) {
+    if (!isVsPcMode) {
+      turnIndicator.style.display = 'none';
+      return;
+    }
+    turnIndicator.style.display = 'block';
+    if (turn === 'player') {
+      turnIndicator.textContent = "Your turn";
+    } else if (turn === 'pc') {
+      turnIndicator.textContent = "Portia's turn";
+    } else {
+      turnIndicator.textContent = '';
+    }
+  }
+
+  function pcRemember(index, card) {
+    if (gameContainer.querySelector(`.card[data-index="${index}"]`).classList.contains('matched')) return;
+    const matchId = card.matchId;
+    if (!pcMemory.has(matchId)) pcMemory.set(matchId, []);
+    const arr = pcMemory.get(matchId);
+    if (!arr.includes(index)) arr.push(index);
+  }
+  function pcForget(index, matchId) {
+    if (!pcMemory.has(matchId)) return;
+    const arr = pcMemory.get(matchId);
+    const idx = arr.indexOf(index);
+    if (idx > -1) arr.splice(idx, 1);
+    if (arr.length === 0) pcMemory.delete(matchId);
+  }
+
+  async function pcTurn() {
+    isLocked = true;
+    while (currentTurn === 'pc' && matchedPairs < difficulties[difficultySelect.value].pairs) {
+      let pair = pcFindKnownPair() || pcPickRandomPair();
+      if (!pair) break;
+
+      flipCardVisual(gameContainer.querySelector(`.card[data-index="${pair[0]}"]`));
+      pcRemember(pair[0], cards[pair[0]]);
+      sounds.flip.play();
+      await delay(700);
+
+      flipCardVisual(gameContainer.querySelector(`.card[data-index="${pair[1]}"]`));
+      pcRemember(pair[1], cards[pair[1]]);
+      sounds.flip.play();
+      await delay(700);
+
+      if(cards[pair[0]].matchId === cards[pair[1]].matchId) {
+        pcScore++;
+        matchedPairs++;
+        updateScores();
+
+        pcForget(pair[0], cards[pair[0]].matchId);
+        pcForget(pair[1], cards[pair[1]].matchId);
+
+        gameContainer.querySelector(`.card[data-index="${pair[0]}"]`).classList.add('matched');
+        gameContainer.querySelector(`.card[data-index="${pair[1]}"]`).classList.add('matched');
+
+        sounds.correct.play();
+
+        if (matchedPairs === difficulties[difficultySelect.value].pairs) {
+          gameWon('pc');
+          return;
+        }
+        await delay(1000);
+      } else {
+        await delay(1200);
+        unflipCardVisual(gameContainer.querySelector(`.card[data-index="${pair[0]}"]`));
+        unflipCardVisual(gameContainer.querySelector(`.card[data-index="${pair[1]}"]`));
+        sounds.keeptrying.play();
+        currentTurn = 'player';
+        setTurnIndicator('player');
+        isLocked = false;
         return;
       }
-      if (gameState.flippedCards.length === 1) {
-        const flippedCard = gameState.flippedCards[0];
-        const matchingCard = gameState.cards.find(card =>
-          card.matchId === flippedCard.card.matchId &&
-          card.id !== flippedCard.card.id
-        );
-        if (matchingCard) {
-          const matchingIndex = gameState.cards.indexOf(matchingCard);
-          const matchingElement = document.querySelector(`[data-index="${matchingIndex}"]`);
-          if (!matchingElement.classList.contains('matched')) {
-            gameState.hintsRemaining--;
-            gameState.usedHintThisTurn = true;
-            updateDisplay();
-            sounds.pickle.play();
-            matchingElement.classList.add('hint-glow');
-            setTimeout(() => {
-              matchingElement.classList.remove('hint-glow');
-            }, 2000);
-          }
-        }
-      } else {
-        alert("Flip one card first to get a hint for its match!");
-      }
     }
-
-    function saveHighScore() {
-      if (!gameState.playerName) {
-        gameState.playerName = document.getElementById('playerName').value || "Anonymous";
-      }
-      const highScores = JSON.parse(localStorage.getItem('conclaveArcanaHighScores')) || [];
-      highScores.push({
-        name: gameState.playerName,
-        score: gameState.score,
-        difficulty: gameState.difficulty,
-        time: gameState.timer,
-        date: new Date().toISOString()
-      });
-      highScores.sort((a, b) => b.score - a.score);
-      if (highScores.length > 10) highScores.length = 10;
-      localStorage.setItem('conclaveArcanaHighScores', JSON.stringify(highScores));
-      loadHighScores();
-    }
-
-    function loadHighScores() {
-      const highScores = JSON.parse(localStorage.getItem('conclaveArcanaHighScores')) || [];
-      const tbody = document.getElementById('highScoresBody');
-      tbody.innerHTML = '';
-      highScores.forEach((score, index) => {
-        const row = document.createElement('tr');
-        const minutes = Math.floor(score.time / 60);
-        const seconds = score.time % 60;
-        const timeString = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-        row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${score.name}</td>
-          <td>${score.score}</td>
-          <td>${score.difficulty.charAt(0).toUpperCase() + score.difficulty.slice(1)}</td>
-          <td>${timeString}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function showBonusNotification(message) {
-      const streakEl = document.getElementById('streakIndicator');
-      streakEl.textContent = message;
-      streakEl.classList.add('show');
-      clearTimeout(streakEl.hideTimeout);
-      streakEl.hideTimeout = setTimeout(() => {
-        streakEl.classList.remove('show');
-      }, 2500);
-    }
-
-    document.getElementById('difficulty').addEventListener('change', newGame);
-  </script>
-<script>
-function closeIntroModal() {
-  document.getElementById("introModal").style.display = "none";
-}
-
-window.addEventListener('load', () => {
-  // Show modal on load (1st time)
-  if (!sessionStorage.getItem('introSeen')) {
-    document.getElementById("introModal").style.display = "flex";
-    sessionStorage.setItem('introSeen', 'true');
-  } else {
-    document.getElementById("introModal").style.display = "none";
+    currentTurn = 'player';
+    setTurnIndicator('player');
+    isLocked = false;
   }
-});
+
+  function pcFindKnownPair() {
+    for(const [matchId, indexes] of pcMemory.entries()) {
+      if(indexes.length >= 2) {
+        const unmatched = indexes.filter(i =>
+          !gameContainer.querySelector(`.card[data-index="${i}"]`).classList.contains('matched'));
+        if(unmatched.length >= 2) return [unmatched[0], unmatched[1]];
+      }
+    }
+    return null;
+  }
+
+  function pcPickRandomPair() {
+    let unmatched = [];
+    gameContainer.querySelectorAll('.card').forEach(c => {
+      if(!c.classList.contains('matched') && !c.classList.contains('flipped')) unmatched.push(parseInt(c.dataset.index));
+    });
+    if(unmatched.length < 2) return null;
+    const shuffled = shuffle(unmatched);
+    return [shuffled[0], shuffled[1]];
+  }
+
+  function delay(ms) { return new Promise(res => setTimeout(res, ms)); }
+
+  const portiaWinMessages = [
+    "Hah! Easy game. Challenge me again if you dare!",
+    "Portia dominates once more! Better luck next time.",
+    "You really thought you could beat me? Cute.",
+    "Another win for Portia! Feel free to try again when ready."
+  ];
+  const portiaLoseMessages = [
+    "No... That can't be! Rematch me and I'll crush you!",
+    "You got lucky... Try again to prove it wasn't a fluke.",
+    "Portia's ego bruised, but not broken. Challenge me again!",
+    "I let you win... Just this once. Ready for a real challenge?"
+  ];
+
+  function gameWon(winner) {
+    clearInterval(timerInterval);
+    isLocked = true;
+    let message = '';
+    if (winner === 'player') {
+      message = `<p>You beat Portia!</p>
+        <p>Moves: ${moves}</p>
+        <p>Time: ${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, '0')}</p>
+        <p>Final Score: ${playerScore}</p><br/>
+        <em>${portiaLoseMessages[Math.floor(Math.random() * portiaLoseMessages.length)]}</em>`;
+      sounds.victory.play();
+    } else {
+      message = `<p>Portia wins!</p>
+        <p>Moves: ${moves}</p>
+        <p>Time: ${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, '0')}</p>
+        <p>Final Score: ${pcScore}</p><br/>
+        <em>${portiaWinMessages[Math.floor(Math.random() * portiaWinMessages.length)]}</em>`;
+      sounds.victory.play();
+    }
+    victoryTextElement.innerHTML = message;
+    victoryMessageContainer.style.display = 'block';
+
+    if(winner === 'player') saveHighScore();
+  }
+
+  function saveHighScore() {
+    const name = playerNameInput.value.trim() || 'Anonymous';
+    const hsKey = 'conclaveArcanaHighScores';
+    const highScores = JSON.parse(localStorage.getItem(hsKey) || '[]');
+    highScores.push({
+      name,
+      score: playerScore,
+      difficulty: difficultySelect.value,
+      time: timer,
+      date: new Date().toISOString()
+    });
+    highScores.sort((a, b) => b.score - a.score);
+    if(highScores.length > 10) highScores.length = 10;
+    localStorage.setItem(hsKey, JSON.stringify(highScores));
+    loadHighScores();
+  }
+
+  function loadHighScores() {
+    const hsKey = 'conclaveArcanaHighScores';
+    const highScores = JSON.parse(localStorage.getItem(hsKey) || '[]');
+    const tbody = document.getElementById('highScoresBody');
+    tbody.innerHTML = '';
+    highScores.forEach((entry, i) => {
+      const tr = document.createElement('tr');
+      const mm = Math.floor(entry.time / 60);
+      const ss = entry.time % 60;
+      const timeStr = `${mm.toString().padStart(2, '0')}:${ss.toString().padStart(2, '0')}`;
+      tr.innerHTML = `<td>${i + 1}</td><td>${entry.name}</td><td>${entry.score}</td><td>${capitalize(entry.difficulty)}</td><td>${timeStr}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  // Update UI helper functions:
+
+  function updateScores() {
+    scoreElement.textContent = playerScore;
+    pcScoreValue.textContent = pcScore;
+  }
+
+  function updateMoves() {
+    movesElement.textContent = moves;
+  }
+
+  function updateHints() {
+    hintsRemainingElement.textContent = hintsRemaining;
+  }
+
+  function updateTimer() {
+    let mm = Math.floor(timer / 60);
+    let ss = timer % 60;
+    timerElement.textContent = `${mm.toString().padStart(2, '0')}:${ss.toString().padStart(2, '0')}`;
+  }
+
+  // Delay helper already defined (delay)
+
+  // Start UI showing intro modal
+  showIntro();
+  loadHighScores();
+
+  // Event listeners for the intro and menu buttons set above
+
+</script>
+
+<script>
+  // Intro modal session logic
+  (function(){
+    window.addEventListener('load', () => {
+      if (!sessionStorage.getItem('introSeen')) {
+        document.getElementById("introModal").style.display = "flex";
+        sessionStorage.setItem('introSeen', 'true');
+      } else {
+        document.getElementById("introModal").style.display = "none";
+      }
+    });
+  })();
 </script>
 </body>
 </html>
