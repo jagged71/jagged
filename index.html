@@ -999,7 +999,6 @@ function checkMatch() {
 		
 		// ✅ Disable streak if hint was used
         if (gameState.usedHintThisTurn) {
-		showBonusNotification("Hint used – streak paused!");
             gameState.consecutiveMatches = 0;
             gameState.usedHintThisTurn = false; // Reset it for next turn
         } else {
