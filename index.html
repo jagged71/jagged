@@ -475,15 +475,6 @@
         <p>Match the character images!</p>
     </div>
 
-<div id="introModal" class="intro-modal">
-  <div class="modal-content">
-    <h2>✨ Welcome to Conclave Arcana</h2>
-    <p>A Splinterlands Universe Game</p>
-    <a class="btn" href="https://splinterlands.com" target="_blank">Visit Splinterlands</a>
-    <button onclick="closeIntroModal()">Enter Game</button>
-  </div>
-</div>
-
     <div class="player-name-input">
         <label for="playerName">Your Name: </label>
         <input type="text" id="playerName" placeholder="Enter your name">
@@ -1246,21 +1237,7 @@ function showBonusNotification(message) {
 
 // Event listeners
 document.getElementById('difficulty').addEventListener('change', newGame);
-
-function closeIntroModal() {
-  document.getElementById("introModal").style.display = "none";
-}
-
-window.addEventListener('load', () => {
-  if (!sessionStorage.getItem('introSeen')) {
-    document.getElementById("introModal").style.display = "flex";
-    sessionStorage.setItem('introSeen', 'true');
-  } else {
-    document.getElementById("introModal").style.display = "none";
-  }
-});
     </script>
-	
 	<footer class="footer-links">
   <p>
     <a href="https://splinterlands.com" target="_blank">🌐 Play Splinterlands</a> |
