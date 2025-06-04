@@ -1012,13 +1012,22 @@
         gameState.consecutiveMatches = 0;
         gameState.recentMismatches++;
 
-        if (gameState.recentMismatches >= 3) {
-          const ohnoSounds = [sounds.ohno1, sounds.ohno2];
-          ohnoSounds[Math.floor(Math.random() * ohnoSounds.length)].play();
-        } else {
-          sounds.keeptrying.play();
-        }
-      }
+        // 30% chance to play one of the “mismatch” sounds:
+if (Math.random() < 0.3) {
+  const feedbackSounds = [
+    sounds.keeptrying,
+    sounds.ohno1,
+    sounds.ohno2,
+    sounds.heartbeat,
+    sounds.ohyeah,
+    sounds.nopressure,
+    sounds.areyoutrying
+  ];
+  const choice = feedbackSounds[
+    Math.floor(Math.random() * feedbackSounds.length)
+  ];
+  choice.play();
+}
 
       gameState.flippedCards = [];
       updateDisplay();
