@@ -822,6 +822,7 @@ let gameState = {
     hintsRemaining: 2, // Add this line
     consecutiveMatches: 0, // Add these for streak tracking
     recentMismatches: 0
+	usedHintThisTurn: false // 🟡 Add this
 };
 
 const difficulties = {
@@ -995,7 +996,16 @@ function checkMatch() {
         card1.element.classList.add('matched');
         card2.element.classList.add('matched');
         gameState.matchedPairs++;
-        gameState.consecutiveMatches++;
+		
+		// ✅ Disable streak if hint was used
+        if (gameState.usedHintThisTurn) {
+		showBonusNotification("Hint used – streak paused!");
+            gameState.consecutiveMatches = 0;
+            gameState.usedHintThisTurn = false; // Reset it for next turn
+        } else {
+            gameState.consecutiveMatches++;
+        }
+		
         gameState.recentMismatches = 0;
 
         let basePoints = 100;
@@ -1138,6 +1148,7 @@ function showHint() {
             if (!matchingElement.classList.contains('matched')) {
                 // Use up a hint
                 gameState.hintsRemaining--;
+				gameState.usedHintThisTurn = true;
                 updateDisplay();
                 
                 // Play hint sound (using pickle sound for hints)
