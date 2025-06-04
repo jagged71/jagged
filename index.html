@@ -6,8 +6,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Conclave Arcana Memory Game</title>
 <style>
-  <!-- 4. ✅ CSS STYLES TO ADD (put inside your <style> block) -->
-<style>
+  <style>
 .branding-header {
   display: flex;
   justify-content: space-between;
@@ -74,7 +73,7 @@
       margin-bottom: 20px;
       font-size: clamp(0.9rem, 2.5vw, 1.1rem);
     }
-    .score, .moves, .timer, .hints-remaining {
+    .score, .moves, .timer, .hints-remaining, .player-score, .pc-score, .current-turn-indicator {
       background: rgba(255, 255, 255, 0.1);
       padding: clamp(8px, 2vw, 10px) clamp(15px, 4vw, 20px);
       border-radius: 10px;
@@ -84,6 +83,10 @@
     .hints-remaining {
       background: rgba(255, 215, 0, 0.2);
       border-color: rgba(255, 215, 0, 0.4);
+    }
+    .current-turn-indicator {
+        background: #28a745; /* Green for current turn */
+        font-weight: bold;
     }
     .game-container {
       display: grid;
@@ -254,7 +257,7 @@
       0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
-    .difficulty-selector {
+    .difficulty-selector, .game-mode-selector {
       margin-bottom: 20px;
       display: flex;
       gap: 10px;
@@ -262,7 +265,7 @@
       flex-wrap: wrap;
       justify-content: center;
     }
-    .difficulty-selector select {
+    .difficulty-selector select, .game-mode-selector select {
       padding: 8px 15px;
       border-radius: 5px;
       border: none;
@@ -383,12 +386,14 @@
         max-width: 200px;
       }
       .player-name-input,
-      .difficulty-selector {
+      .difficulty-selector,
+      .game-mode-selector { /* Added game-mode-selector */
         flex-direction: column;
         text-align: center;
       }
       .player-name-input input,
-      .difficulty-selector select {
+      .difficulty-selector select,
+      .game-mode-selector select { /* Added game-mode-selector */
         width: 100%;
         max-width: 200px;
       }
@@ -495,15 +500,12 @@
 </style>
 </head>
 <body><div class="header branding-inline"><img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/><h1>⚔️ Conclave Arcana Memory Game ⚔️</h1><p>Match the character images!</p><img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/></div>
-<!-- 1. ✅ HEADER BRANDING SECTION -->
-<!-- 2. ✅ FOOTER BRANDING LINKS -->
 <footer class="footer-links">
 <p>
 <a href="https://splinterlands.com" target="_blank">🌐 Play Splinterlands</a> |
     <a href="https://discord.gg/pkuTQBVR" target="_blank">💬 Join Discord</a>
 </p>
 </footer>
-<!-- 3. ✅ OPTIONAL INTRO SPLASH (Place near start of <body>) -->
 <div class="intro-modal" id="introModal">
 <div class="modal-content">
 <h2>✨ Welcome to Conclave Arcana Memory Game</h2>
@@ -512,10 +514,17 @@
 <button onclick="closeIntroModal()">Enter Game</button>
 </div>
 </div>
-<!-- 1. ✅ HEADER BRANDING SECTION -->
 <div class="player-name-input">
 <label for="playerName">Your Name: </label>
 <input id="playerName" placeholder="Enter your name" type="text"/>
+</div>
+
+<div class="game-mode-selector">
+    <label for="gameMode">Game Mode: </label>
+    <select id="gameMode">
+        <option value="solo">Solo</option>
+        <option value="pc-vs-player">PC vs Player</option>
+    </select>
 </div>
 <div class="difficulty-selector">
 <label for="difficulty">Difficulty: </label>
@@ -527,16 +536,17 @@
 </select>
 </div>
 <div class="game-info">
-<div class="score">Score: <span id="score">0</span></div>
+<div class="score" id="playerScoreDisplay">Your Score: <span id="score">0</span></div>
+<div class="score" id="pcScoreDisplay" style="display:none;">PC Score: <span id="pcScore">0</span></div>
 <div class="moves">Moves: <span id="moves">0</span></div>
 <div class="timer">Time: <span id="timer">00:00</span></div>
 <div class="hints-remaining">Hints: <span id="hintsRemaining">2</span></div>
+<div class="current-turn-indicator" id="currentTurnIndicator" style="display:none;">Turn: <span id="turnPlayer"></span></div>
 </div>
 <div class="streak-indicator" id="streakIndicator">
     🔥 Streak: <span id="streakCount">0</span>
 </div>
 <div class="game-container" id="gameContainer">
-<!-- Cards will be generated here -->
 </div>
 <div class="controls">
 <button class="btn" onclick="newGame()">New Game</button>
@@ -567,7 +577,6 @@
 </tr>
 </thead>
 <tbody id="highScoresBody">
-<!-- High scores will be loaded here -->
 </tbody>
 </table>
 </div>
@@ -805,7 +814,7 @@
       flippedCards: [],
       matchedPairs: 0,
       moves: 0,
-      score: 0,
+      score: 0, // This will be the player's score in solo mode
       timer: 0,
       gameStarted: false,
       timerInterval: null,
@@ -814,7 +823,15 @@
       hintsRemaining: 2,
       consecutiveMatches: 0,
       recentMismatches: 0,
-      usedHintThisTurn: false
+      usedHintThisTurn: false,
+      // NEW: Game Mode and PC vs Player specific states
+      gameMode: 'solo', // 'solo' or 'pc-vs-player'
+      currentPlayer: 'player', // 'player' or 'pc'
+      playerScore: 0,
+      pcScore: 0,
+      aiMemory: {}, // To store known card positions and types for AI
+      isPCLocking: false, // To prevent player interaction during PC turn
+      pcFlippedCount: 0 // To track cards flipped by PC in a turn
     };
 
     const difficulties = {
@@ -830,6 +847,11 @@
       document.getElementById('playerName').addEventListener('change', function() {
         gameState.playerName = this.value;
       });
+      // NEW: Add event listener for game mode selection
+      document.getElementById('gameMode').addEventListener('change', function() {
+          gameState.gameMode = this.value;
+          newGame(); // Start a new game with the selected mode
+      });
     };
 
     function initGame() {
@@ -839,6 +861,15 @@
       gameState.consecutiveMatches = 0;
       gameState.recentMismatches = 0;
       gameState.usedHintThisTurn = false;
+
+      // NEW: Reset scores based on game mode
+      gameState.score = 0; // Solo mode score
+      gameState.playerScore = 0; // PC vs Player score
+      gameState.pcScore = 0; // PC vs Player score
+      gameState.currentPlayer = 'player'; // Player always starts
+      gameState.aiMemory = {}; // Clear AI memory
+      gameState.isPCLocking = false;
+      gameState.pcFlippedCount = 0;
 
       const pairCount = difficulties[difficulty].pairs;
       const gridSize = difficulties[difficulty].grid;
@@ -854,8 +885,8 @@
       gameState.cards = [];
       selectedCharacters.forEach((char, index) => {
         gameState.cards.push(
-          { id: `img_${index}`, type: 'image', character: char, matchId: index },
-          { id: `name_${index}`, type: 'name', character: char, matchId: index }
+          { id: `img_${index}`, type: 'image', character: char, matchId: index, isMatched: false },
+          { id: `name_${index}`, type: 'name', character: char, matchId: index, isMatched: false }
         );
       });
 
@@ -867,7 +898,6 @@
       gameState.flippedCards = [];
       gameState.matchedPairs = 0;
       gameState.moves = 0;
-      gameState.score = 0;
       gameState.timer = 0;
       gameState.gameStarted = false;
       if (gameState.timerInterval) clearInterval(gameState.timerInterval);
@@ -879,6 +909,9 @@
     function renderCards() {
       const container = document.getElementById('gameContainer');
       container.innerHTML = '';
+      const gridSetting = difficulties[gameState.difficulty].grid;
+      container.style.gridTemplateColumns = `repeat(${gridSetting}, 1fr)`; // Set grid columns based on difficulty
+
       gameState.cards.forEach((card, index) => {
         const cardElement = document.createElement('div');
         cardElement.className = 'card';
@@ -899,6 +932,13 @@
     }
 
     function flipCard(index) {
+      if (gameState.isPCLocking) return; // Prevent player clicks during PC turn
+
+      // NEW: Only allow clicks if it's the player's turn in PC vs Player mode
+      if (gameState.gameMode === 'pc-vs-player' && gameState.currentPlayer !== 'player') {
+          return;
+      }
+
       if (!gameState.gameStarted) {
         startTimer();
         gameState.gameStarted = true;
@@ -912,22 +952,31 @@
       cardElement.classList.add('flipped');
       gameState.flippedCards.push({ index, card, element: cardElement });
 
+      // NEW: AI "learns" from flipped cards
+      gameState.aiMemory[card.matchId] = gameState.aiMemory[card.matchId] || [];
+      if (!gameState.aiMemory[card.matchId].includes(index)) {
+          gameState.aiMemory[card.matchId].push(index);
+      }
+
+
       if (gameState.flippedCards.length === 2) {
         gameState.moves++;
         updateDisplay();
         setTimeout(() => {
           checkMatch();
-          autoFlipLastTwoCards();
+          // autoFlipLastTwoCards(); // This function needs to be re-evaluated for PC vs Player mode
         }, 1000);
       }
     }
 
     function autoFlipLastTwoCards() {
+      // This function's logic needs to be integrated carefully or modified for PC vs Player
+      // For now, let's keep it as is, but it might be removed or heavily changed.
       const remainingIndexes = gameState.cards
         .map((card, idx) => ({ card, idx }))
         .filter(({ card, idx }) => {
           const el = document.querySelector(`[data-index="${idx}"]`);
-          return !card.matched && !el.classList.contains('flipped');
+          return !card.isMatched && !el.classList.contains('flipped'); // Use card.isMatched
         })
         .map(({ idx }) => idx);
 
@@ -946,9 +995,14 @@
 
     function checkMatch() {
       const [card1, card2] = gameState.flippedCards;
-      if (card1.card.matchId === card2.card.matchId) {
+      const isMatch = (card1.card.matchId === card2.card.matchId);
+
+      if (isMatch) {
         card1.element.classList.add('matched');
         card2.element.classList.add('matched');
+        card1.card.isMatched = true; // Mark card as matched in gameState
+        card2.card.isMatched = true; // Mark card as matched in gameState
+
         gameState.matchedPairs++;
 
         if (gameState.usedHintThisTurn) {
@@ -991,7 +1045,18 @@
           }
         }
 
-        gameState.score += basePoints + bonus;
+        // NEW: Assign score based on current player
+        if (gameState.gameMode === 'solo') {
+            gameState.score += basePoints + bonus;
+        } else {
+            if (gameState.currentPlayer === 'player') {
+                gameState.playerScore += basePoints + bonus;
+            } else {
+                gameState.pcScore += basePoints + bonus;
+            }
+        }
+
+
         if (bonus > 0) {
           showBonusNotification(`🔥 Streak x${gameState.consecutiveMatches}! +${bonus} bonus`);
         }
@@ -1005,34 +1070,58 @@
         if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
           gameWon();
         }
+        gameState.flippedCards = [];
+        updateDisplay();
+        // If PC matched, it gets another turn
+        if (gameState.gameMode === 'pc-vs-player' && gameState.currentPlayer === 'pc') {
+            setTimeout(pcTurn, 1200); // PC takes another turn after a short delay
+        } else if (gameState.gameMode === 'pc-vs-player' && gameState.currentPlayer === 'player') {
+            // Player matched, still player's turn to consider next move or AI turn if not matched
+            // No turn change needed here, just clear flipped cards
+        }
+
       } else {
-        card1.element.classList.remove('flipped');
-        card2.element.classList.remove('flipped');
-        gameState.score -= 10;
+        // Mismatch
+        gameState.score -= 10; // Still deduct from solo score, or from current player in vs mode
+        if (gameState.gameMode === 'pc-vs-player') {
+            if (gameState.currentPlayer === 'player') {
+                gameState.playerScore = Math.max(0, gameState.playerScore - 10);
+            } else {
+                gameState.pcScore = Math.max(0, gameState.pcScore - 10);
+            }
+        }
+        
         gameState.consecutiveMatches = 0;
         gameState.recentMismatches++;
 
         // 30% chance to play one of the “mismatch” sounds:
-if (Math.random() < 0.3) {
-  const feedbackSounds = [
-    sounds.keeptrying,
-    sounds.ohno1,
-    sounds.ohno2,
-    sounds.heartbeat,
-    sounds.ohyeah,
-    sounds.nopressure,
-    sounds.areyoutrying
-  ];
-  const choice = feedbackSounds[
-    Math.floor(Math.random() * feedbackSounds.length)
-  ];
-  choice.play();
-}
+        if (Math.random() < 0.3) {
+          const feedbackSounds = [
+            sounds.keeptrying,
+            sounds.ohno1,
+            sounds.ohno2,
+            sounds.heartbeat,
+            sounds.ohyeah,
+            sounds.nopressure,
+            sounds.areyoutrying
+          ];
+          const choice = feedbackSounds[
+            Math.floor(Math.random() * feedbackSounds.length)
+          ];
+          choice.play();
+        }
 
-}
-
-      gameState.flippedCards = [];
-      updateDisplay();
+        setTimeout(() => {
+            card1.element.classList.remove('flipped');
+            card2.element.classList.remove('flipped');
+            gameState.flippedCards = [];
+            updateDisplay();
+            // NEW: Switch turns after a mismatch
+            if (gameState.gameMode === 'pc-vs-player') {
+                switchTurn();
+            }
+        }, 1200); // Cards stay flipped for 1.2 seconds before flipping back
+      }
     }
 
     function startTimer() {
@@ -1043,7 +1132,27 @@ if (Math.random() < 0.3) {
     }
 
     function updateDisplay() {
-      document.getElementById('score').textContent = gameState.score;
+      // NEW: Conditional display for scores based on game mode
+      const playerScoreDisplay = document.getElementById('playerScoreDisplay');
+      const pcScoreDisplay = document.getElementById('pcScoreDisplay');
+      const soloScoreDisplay = document.getElementById('score');
+      const currentTurnIndicator = document.getElementById('currentTurnIndicator');
+
+      if (gameState.gameMode === 'solo') {
+          playerScoreDisplay.style.display = 'none';
+          pcScoreDisplay.style.display = 'none';
+          soloScoreDisplay.textContent = gameState.score;
+          document.querySelector('#playerScoreDisplay .score-label').textContent = 'Score:'; // Adjust label for solo
+          currentTurnIndicator.style.display = 'none';
+      } else { // pc-vs-player
+          playerScoreDisplay.style.display = 'block';
+          pcScoreDisplay.style.display = 'block';
+          document.getElementById('playerScore').textContent = gameState.playerScore;
+          document.getElementById('pcScore').textContent = gameState.pcScore;
+          document.getElementById('turnPlayer').textContent = gameState.currentPlayer === 'player' ? 'Player' : 'PC';
+          currentTurnIndicator.style.display = 'block';
+      }
+
       document.getElementById('moves').textContent = gameState.moves;
       document.getElementById('hintsRemaining').textContent = gameState.hintsRemaining;
       const minutes = Math.floor(gameState.timer / 60);
@@ -1054,14 +1163,32 @@ if (Math.random() < 0.3) {
 
     function gameWon() {
       clearInterval(gameState.timerInterval);
-      const bonusPoints = Math.max(0, 500 - (gameState.moves * 10) - (gameState.timer * 2));
-      gameState.score += bonusPoints;
+      let winnerMessage = '';
+      let finalScore = 0;
+
+      if (gameState.gameMode === 'solo') {
+          const bonusPoints = Math.max(0, 500 - (gameState.moves * 10) - (gameState.timer * 2));
+          gameState.score += bonusPoints;
+          finalScore = gameState.score;
+          winnerMessage = `You matched all Characters!`;
+      } else { // PC vs Player mode
+          if (gameState.playerScore > gameState.pcScore) {
+              winnerMessage = `${gameState.playerName || 'Player'} Wins!`;
+              finalScore = gameState.playerScore;
+          } else if (gameState.pcScore > gameState.playerScore) {
+              winnerMessage = `PC Wins!`;
+              finalScore = gameState.pcScore;
+          } else {
+              winnerMessage = `It's a Tie!`;
+              finalScore = gameState.playerScore; // Or pcScore, they are equal
+          }
+      }
       sounds.victory.play();
       document.getElementById('victoryText').innerHTML = `
-        <p>You matched all Characters!</p>
+        <p>${winnerMessage}</p>
         <p>Moves: ${gameState.moves}</p>
         <p>Time: ${Math.floor(gameState.timer / 60)}:${(gameState.timer % 60).toString().padStart(2, '0')}</p>
-        <p>Final Score: ${gameState.score}</p>
+        <p>Final Score: ${finalScore}</p>
       `;
       document.getElementById('victoryMessage').style.display = 'block';
       saveHighScore();
@@ -1073,6 +1200,10 @@ if (Math.random() < 0.3) {
     }
     function newGame() {
       initGame();
+      // NEW: Immediately start PC turn if game mode is PC vs Player
+      if (gameState.gameMode === 'pc-vs-player' && gameState.currentPlayer === 'pc') {
+          pcTurn();
+      }
     }
 
     function showHint() {
@@ -1080,11 +1211,18 @@ if (Math.random() < 0.3) {
         alert("You're out of hints!");
         return;
       }
+      // NEW: Hints only for player's turn
+      if (gameState.gameMode === 'pc-vs-player' && gameState.currentPlayer !== 'player') {
+          alert("Hints are only available during your turn!");
+          return;
+      }
+
       if (gameState.flippedCards.length === 1) {
         const flippedCard = gameState.flippedCards[0];
         const matchingCard = gameState.cards.find(card =>
           card.matchId === flippedCard.card.matchId &&
-          card.id !== flippedCard.card.id
+          !card.isMatched && // Ensure it's not already matched
+          card.id !== flippedCard.card.id // Ensure it's not the same card
         );
         if (matchingCard) {
           const matchingIndex = gameState.cards.indexOf(matchingCard);
@@ -1112,7 +1250,7 @@ if (Math.random() < 0.3) {
       const highScores = JSON.parse(localStorage.getItem('conclaveArcanaHighScores')) || [];
       highScores.push({
         name: gameState.playerName,
-        score: gameState.score,
+        score: gameState.score, // This is still the solo score for high scores
         difficulty: gameState.difficulty,
         time: gameState.timer,
         date: new Date().toISOString()
@@ -1154,6 +1292,77 @@ if (Math.random() < 0.3) {
     }
 
     document.getElementById('difficulty').addEventListener('change', newGame);
+
+    // NEW: Function to switch turns
+    function switchTurn() {
+        gameState.flippedCards = []; // Clear any remaining flipped cards from the previous turn
+        if (gameState.gameMode === 'pc-vs-player') {
+            if (gameState.currentPlayer === 'player') {
+                gameState.currentPlayer = 'pc';
+                gameState.isPCLocking = true; // Lock player input
+                updateDisplay();
+                setTimeout(pcTurn, 1000); // Give a short delay before PC moves
+            } else {
+                gameState.currentPlayer = 'player';
+                gameState.isPCLocking = false; // Unlock player input
+                updateDisplay();
+            }
+        }
+    }
+
+    // NEW: PC (AI) Turn Logic
+    function pcTurn() {
+        if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
+            gameWon(); // All cards matched, end game
+            return;
+        }
+
+        const availableCards = [];
+        for (let i = 0; i < gameState.cards.length; i++) {
+            const cardElement = document.querySelector(`[data-index="${i}"]`);
+            if (!gameState.cards[i].isMatched && !cardElement.classList.contains('flipped')) {
+                availableCards.push(i);
+            }
+        }
+
+        let firstPickIndex = -1;
+        let secondPickIndex = -1;
+
+        // 1. Check for known matches in AI memory
+        for (const matchId in gameState.aiMemory) {
+            const knownPositions = gameState.aiMemory[matchId].filter(idx => 
+                !gameState.cards[idx].isMatched && // Card not matched
+                !document.querySelector(`[data-index="${idx}"]`).classList.contains('flipped') // Card not currently flipped
+            );
+
+            if (knownPositions.length >= 2) {
+                firstPickIndex = knownPositions[0];
+                secondPickIndex = knownPositions[1];
+                break; // Found a match, prioritize this
+            }
+        }
+
+        // 2. If no known match, pick two random available cards
+        if (firstPickIndex === -1) {
+            if (availableCards.length < 2) {
+                gameWon(); // No more moves possible
+                return;
+            }
+            // Shuffle available cards to pick random ones
+            const shuffledAvailable = availableCards.sort(() => 0.5 - Math.random());
+            firstPickIndex = shuffledAvailable[0];
+            secondPickIndex = shuffledAvailable[1];
+        }
+
+        // Perform the flips with a delay
+        setTimeout(() => {
+            flipCard(firstPickIndex);
+            setTimeout(() => {
+                flipCard(secondPickIndex);
+            }, 800); // Shorter delay for second flip
+        }, 800); // Delay for first flip
+    }
+
   </script>
 <script>
 function closeIntroModal() {
