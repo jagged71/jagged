@@ -1,11 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Conclave Arcana Memory Game</title>
 <style>
-  .branding-header {
+  <!-- 4. ✅ CSS STYLES TO ADD (put inside your <style> block) -->
+<style>
+.branding-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -71,7 +74,7 @@
       margin-bottom: 20px;
       font-size: clamp(0.9rem, 2.5vw, 1.1rem);
     }
-    .score, .moves, .timer, .hints-remaining, .turn-indicator {
+    .score, .moves, .timer, .hints-remaining {
       background: rgba(255, 255, 255, 0.1);
       padding: clamp(8px, 2vw, 10px) clamp(15px, 4vw, 20px);
       border-radius: 10px;
@@ -251,7 +254,7 @@
       0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
-    .difficulty-selector, .game-mode-selector {
+    .difficulty-selector {
       margin-bottom: 20px;
       display: flex;
       gap: 10px;
@@ -259,7 +262,7 @@
       flex-wrap: wrap;
       justify-content: center;
     }
-    .difficulty-selector select, .game-mode-selector select {
+    .difficulty-selector select {
       padding: 8px 15px;
       border-radius: 5px;
       border: none;
@@ -356,16 +359,6 @@
       transform: translateX(0);
       opacity: 1;
     }
-    .portia-thinking {
-      border: 2px dashed #ff00ff; /* Purple dashed border */
-      animation: thinkingGlow 1.5s infinite alternate;
-    }
-    @keyframes thinkingGlow {
-      from { box-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff; }
-      to { box-shadow: 0 0 15px #ff00ff, 0 0 25px #ff00ff; }
-    }
-
-
     @media (max-width: 768px) {
       body {
         padding: 10px;
@@ -390,14 +383,12 @@
         max-width: 200px;
       }
       .player-name-input,
-      .difficulty-selector,
-      .game-mode-selector {
+      .difficulty-selector {
         flex-direction: column;
         text-align: center;
       }
       .player-name-input input,
-      .difficulty-selector select,
-      .game-mode-selector select {
+      .difficulty-selector select {
         width: 100%;
         max-width: 200px;
       }
@@ -504,12 +495,15 @@
 </style>
 </head>
 <body><div class="header branding-inline"><img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/><h1>⚔️ Conclave Arcana Memory Game ⚔️</h1><p>Match the character images!</p><img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/></div>
+<!-- 1. ✅ HEADER BRANDING SECTION -->
+<!-- 2. ✅ FOOTER BRANDING LINKS -->
 <footer class="footer-links">
 <p>
 <a href="https://splinterlands.com" target="_blank">🌐 Play Splinterlands</a> |
     <a href="https://discord.gg/pkuTQBVR" target="_blank">💬 Join Discord</a>
 </p>
 </footer>
+<!-- 3. ✅ OPTIONAL INTRO SPLASH (Place near start of <body>) -->
 <div class="intro-modal" id="introModal">
 <div class="modal-content">
 <h2>✨ Welcome to Conclave Arcana Memory Game</h2>
@@ -518,16 +512,10 @@
 <button onclick="closeIntroModal()">Enter Game</button>
 </div>
 </div>
+<!-- 1. ✅ HEADER BRANDING SECTION -->
 <div class="player-name-input">
 <label for="playerName">Your Name: </label>
 <input id="playerName" placeholder="Enter your name" type="text"/>
-</div>
-<div class="game-mode-selector">
-  <label for="gameMode">Game Mode: </label>
-  <select id="gameMode">
-    <option value="solo">Solo Play</option>
-    <option value="vsPortia">Player vs Portia</option>
-  </select>
 </div>
 <div class="difficulty-selector">
 <label for="difficulty">Difficulty: </label>
@@ -543,12 +531,12 @@
 <div class="moves">Moves: <span id="moves">0</span></div>
 <div class="timer">Time: <span id="timer">00:00</span></div>
 <div class="hints-remaining">Hints: <span id="hintsRemaining">2</span></div>
-<div class="turn-indicator" id="turnIndicator" style="display: none;"></div>
 </div>
 <div class="streak-indicator" id="streakIndicator">
     🔥 Streak: <span id="streakCount">0</span>
 </div>
 <div class="game-container" id="gameContainer">
+<!-- Cards will be generated here -->
 </div>
 <div class="controls">
 <button class="btn" onclick="newGame()">New Game</button>
@@ -579,6 +567,7 @@
 </tr>
 </thead>
 <tbody id="highScoresBody">
+<!-- High scores will be loaded here -->
 </tbody>
 </table>
 </div>
@@ -666,23 +655,11 @@
       victory: new Audio('sounds/victory.mp3'),
       extrapickup: new Audio('sounds/extrapickup.wav'),
       heartbeat: new Audio('sounds/heartbeat.mp3'),
-      ohyeah: new Audio('sounds/ohyeah.ohyeah.mp3'), // Corrected path
+      ohyeah: new Audio('sounds/ohyeah.wav'),
       nopressure: new Audio('sounds/nopressure.mp3'),
-      areyoutrying: new Audio('sounds/areyoutrying.mp3'),
-      portia_thinking: new Audio('sounds/Portia_thinking.mp3'), // New sound
-      portia_laugh: new Audio('sounds/Portia_laugh.mp3'), // New sound
-      portia_easy: new Audio('sounds/Portia_easy.mp3'), // New sound
-      portia_concede: new Audio('sounds/Portia_concede.mp3') // New sound
+      areyoutrying: new Audio('sounds/areyoutrying.mp3')
     };
-    // Ensure all new audio objects are created correctly. If a path is wrong, it will be caught here.
-    for (const key in sounds) {
-        if (sounds[key] instanceof Audio) {
-            sounds[key].volume = 0.5;
-        } else {
-            console.error(`Error loading sound: ${key}`);
-        }
-    }
-
+    Object.values(sounds).forEach(sound => sound.volume = 0.5);
     music.init();
 
     const muteBtn = document.getElementById('muteBtn');
@@ -826,27 +803,18 @@
     let gameState = {
       cards: [],
       flippedCards: [],
-      matchedPairs: 0, // Total matched pairs in the game
-      playerPairs: 0, // Matched pairs for the player
-      portiaPairs: 0, // Matched pairs for Portia
+      matchedPairs: 0,
       moves: 0,
-      playerScore: 0, // Player's score
-      portiaScore: 0, // Portia's score
+      score: 0,
       timer: 0,
       gameStarted: false,
       timerInterval: null,
       difficulty: 'medium',
-      gameMode: 'solo', // 'solo' or 'vsPortia'
       playerName: '',
       hintsRemaining: 2,
-      consecutiveMatches: 0, // Player's streak
+      consecutiveMatches: 0,
       recentMismatches: 0,
-      usedHintThisTurn: false,
-      isPortiaTurn: false, // Flag for Portia's turn
-      portiaKnownCards: [], // Portia's memory of flipped cards: [{matchId: X, index: Y}]
-      // For Portia's logic
-      portiaFlippedOnce: -1, // Stores the index of the first card Portia flipped this turn
-      isProcessingTurn: false // To prevent clicks during AI or transition
+      usedHintThisTurn: false
     };
 
     const difficulties = {
@@ -862,25 +830,15 @@
       document.getElementById('playerName').addEventListener('change', function() {
         gameState.playerName = this.value;
       });
-      document.getElementById('gameMode').addEventListener('change', newGame);
-      document.getElementById('difficulty').addEventListener('change', newGame);
     };
 
     function initGame() {
       const difficulty = document.getElementById('difficulty').value;
-      const gameMode = document.getElementById('gameMode').value;
-
       gameState.difficulty = difficulty;
-      gameState.gameMode = gameMode;
       gameState.hintsRemaining = 2;
       gameState.consecutiveMatches = 0;
       gameState.recentMismatches = 0;
       gameState.usedHintThisTurn = false;
-      gameState.isPortiaTurn = false;
-      gameState.portiaKnownCards = [];
-      gameState.portiaFlippedOnce = -1;
-      gameState.isProcessingTurn = false;
-
 
       const pairCount = difficulties[difficulty].pairs;
       const gridSize = difficulties[difficulty].grid;
@@ -896,8 +854,8 @@
       gameState.cards = [];
       selectedCharacters.forEach((char, index) => {
         gameState.cards.push(
-          { id: `img_${index}`, type: 'image', character: char, matchId: index, matched: false },
-          { id: `name_${index}`, type: 'name', character: char, matchId: index, matched: false }
+          { id: `img_${index}`, type: 'image', character: char, matchId: index },
+          { id: `name_${index}`, type: 'name', character: char, matchId: index }
         );
       });
 
@@ -908,27 +866,19 @@
 
       gameState.flippedCards = [];
       gameState.matchedPairs = 0;
-      gameState.playerPairs = 0;
-      gameState.portiaPairs = 0;
       gameState.moves = 0;
-      gameState.playerScore = 0;
-      gameState.portiaScore = 0;
+      gameState.score = 0;
       gameState.timer = 0;
       gameState.gameStarted = false;
       if (gameState.timerInterval) clearInterval(gameState.timerInterval);
 
       updateDisplay();
       renderCards();
-      // Disable hint button if game mode is vsPortia
-      document.getElementById('hintBtn').disabled = (gameState.gameMode === 'vsPortia');
     }
 
     function renderCards() {
       const container = document.getElementById('gameContainer');
       container.innerHTML = '';
-      const gridSize = difficulties[gameState.difficulty].grid;
-      container.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-
       gameState.cards.forEach((card, index) => {
         const cardElement = document.createElement('div');
         cardElement.className = 'card';
@@ -937,7 +887,7 @@
         cardElement.innerHTML = `
           <div class="card-inner">
             <div class="card-front">
-              <img src="images/${card.character.image}" alt="${card.character.name}" class="card-image" />
+              <img src="${card.character.image}" alt="${card.character.name}" class="card-image" />
             </div>
             <div class="card-back">
               <img src="conclave-logo.png" alt="Conclave Arcana Logo" class="card-logo" />
@@ -949,173 +899,57 @@
     }
 
     function flipCard(index) {
-        if (gameState.isProcessingTurn) return; // Prevent clicks during AI turn or match processing
-        if (gameState.gameMode === 'vsPortia' && gameState.isPortiaTurn) return; // Prevent player clicks on Portia's turn
+      if (!gameState.gameStarted) {
+        startTimer();
+        gameState.gameStarted = true;
+      }
+      const card = gameState.cards[index];
+      const cardElement = document.querySelector(`[data-index="${index}"]`);
+      if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return;
+      if (gameState.flippedCards.length >= 2) return;
 
-        if (!gameState.gameStarted) {
-            startTimer();
-            gameState.gameStarted = true;
-        }
+      sounds.flip.play();
+      cardElement.classList.add('flipped');
+      gameState.flippedCards.push({ index, card, element: cardElement });
 
-        const card = gameState.cards[index];
-        const cardElement = document.querySelector(`[data-index="${index}"]`);
-
-        if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return;
-        if (gameState.flippedCards.length >= 2) return;
-
-        sounds.flip.play();
-        cardElement.classList.add('flipped');
-        gameState.flippedCards.push({ index, card, element: cardElement });
-
-        // Portia learns from every flipped card
-        if (!card.matched) { // Only add to known cards if not already matched
-            const existingKnownCardIndex = gameState.portiaKnownCards.findIndex(
-                kc => kc.index === index
-            );
-            if (existingKnownCardIndex !== -1) {
-                // If Portia already knows this card, update its status if needed (e.g., just flipped)
-                gameState.portiaKnownCards[existingKnownCardIndex].isFlipped = true;
-            } else {
-                // Add to Portia's memory if new card
-                gameState.portiaKnownCards.push({
-                    index: index,
-                    matchId: card.matchId,
-                    characterName: card.character.name,
-                    isFlipped: true // Mark as currently flipped
-                });
-            }
-        }
-
-
-        if (gameState.flippedCards.length === 2) {
-            gameState.isProcessingTurn = true; // Block further clicks
-            if (gameState.gameMode === 'solo') {
-                gameState.moves++;
-                updateDisplay();
-                setTimeout(() => {
-                    checkMatch();
-                }, 1000);
-            } else { // vsPortia mode
-                updateDisplay(); // Update moves/scores before checkMatch
-                setTimeout(() => {
-                    handleVSPortiaResult();
-                }, 1000);
-            }
-        }
-    }
-
-    // Function to handle game flow for Player vs Portia mode
-    function handleVSPortiaResult() {
-        const [card1, card2] = gameState.flippedCards;
-        let matched = false;
-        const currentPlayerIsPortia = gameState.isPortiaTurn;
-
-        if (card1.card.matchId === card2.card.matchId) {
-            matched = true;
-            card1.element.classList.add('matched');
-            card2.element.classList.add('matched');
-            gameState.matchedPairs++;
-
-            // Award points and pairs to the correct player
-            if (currentPlayerIsPortia) {
-                gameState.portiaScore += 100;
-                gameState.portiaPairs++;
-                sounds.correct.play();
-                showBonusNotification(`Portia matched!`);
-            } else {
-                gameState.playerScore += 100;
-                gameState.playerPairs++;
-                 if (gameState.usedHintThisTurn) {
-                    gameState.consecutiveMatches = 0;
-                    gameState.usedHintThisTurn = false;
-                } else {
-                    gameState.consecutiveMatches++;
-                }
-                gameState.recentMismatches = 0;
-
-                let bonus = 0;
-                switch (gameState.consecutiveMatches) {
-                    case 2: bonus = 50; sounds.twoinarow.play(); break;
-                    case 3: bonus = 150; sounds.threeinarow.play(); break;
-                    case 4: bonus = 500; sounds.fourinarow.play(); break;
-                    case 5:
-                    default: bonus = 1000; sounds.unstoppable.play(); break;
-                }
-                gameState.playerScore += bonus;
-                if (bonus > 0) {
-                    showBonusNotification(`🔥 Streak x${gameState.consecutiveMatches}! +${bonus} bonus`);
-                }
-                sounds.correct.play();
-            }
-
-             // Remove matched cards from Portia's known cards
-            gameState.portiaKnownCards = gameState.portiaKnownCards.filter(
-                kc => kc.index !== card1.index && kc.index !== card2.index
-            );
-
-        } else {
-            // Mismatch
-            card1.element.classList.remove('flipped');
-            card2.element.classList.remove('flipped');
-
-            // Player loses points for mismatch
-            if (!currentPlayerIsPortia) {
-                gameState.playerScore = Math.max(0, gameState.playerScore - 10);
-                gameState.consecutiveMatches = 0;
-                gameState.recentMismatches++;
-                if (Math.random() < 0.3) {
-                    const feedbackSounds = [
-                        sounds.keeptrying, sounds.ohno1, sounds.ohno2, sounds.heartbeat,
-                        sounds.ohyeah, sounds.nopressure, sounds.areyoutrying
-                    ];
-                    const choice = feedbackSounds[Math.floor(Math.random() * feedbackSounds.length)];
-                    choice.play();
-                }
-            } else {
-                 // Portia also "forgets" these cards if they didn't match and were her flips
-                gameState.portiaKnownCards = gameState.portiaKnownCards.map(kc => {
-                    if (kc.index === card1.index || kc.index === card2.index) {
-                        return { ...kc, isFlipped: false }; // Mark as no longer flipped
-                    }
-                    return kc;
-                });
-            }
-        }
-
-        gameState.flippedCards = [];
-        gameState.isProcessingTurn = false; // Allow clicks again
-
-        if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
-            gameWon();
-            return;
-        }
-
-        // Determine next turn
-        if (matched) {
-            // Current player gets another turn
-            if (currentPlayerIsPortia) {
-                setTimeout(portiasTurn, 1000); // Portia's next turn
-            } else {
-                // Player continues, no need to do anything, player will click
-            }
-        } else {
-            // Switch turns
-            gameState.isPortiaTurn = !gameState.isPortiaTurn;
-            if (gameState.isPortiaTurn) {
-                setTimeout(portiasTurn, 1000); // Start Portia's turn
-            }
-        }
+      if (gameState.flippedCards.length === 2) {
+        gameState.moves++;
         updateDisplay();
+        setTimeout(() => {
+          checkMatch();
+          autoFlipLastTwoCards();
+        }, 1000);
+      }
     }
 
+    function autoFlipLastTwoCards() {
+      const remainingIndexes = gameState.cards
+        .map((card, idx) => ({ card, idx }))
+        .filter(({ card, idx }) => {
+          const el = document.querySelector(`[data-index="${idx}"]`);
+          return !card.matched && !el.classList.contains('flipped');
+        })
+        .map(({ idx }) => idx);
 
-    function checkMatch() { // This function is only for Solo mode now
+      if (remainingIndexes.length === 2) {
+        setTimeout(() => {
+          remainingIndexes.forEach(idx => flipCard(idx));
+          setTimeout(() => {
+            const unmatched = document.querySelectorAll('.card:not(.matched)');
+            if (unmatched.length === 0) {
+              gameWon();
+            }
+          }, 1200);
+        }, 500);
+      }
+    }
+
+    function checkMatch() {
       const [card1, card2] = gameState.flippedCards;
       if (card1.card.matchId === card2.card.matchId) {
         card1.element.classList.add('matched');
         card2.element.classList.add('matched');
         gameState.matchedPairs++;
-        gameState.playerPairs++; // Only player in solo mode
 
         if (gameState.usedHintThisTurn) {
           gameState.consecutiveMatches = 0;
@@ -1157,7 +991,7 @@
           }
         }
 
-        gameState.playerScore += basePoints + bonus;
+        gameState.score += basePoints + bonus;
         if (bonus > 0) {
           showBonusNotification(`🔥 Streak x${gameState.consecutiveMatches}! +${bonus} bonus`);
         }
@@ -1174,22 +1008,28 @@
       } else {
         card1.element.classList.remove('flipped');
         card2.element.classList.remove('flipped');
-        gameState.playerScore = Math.max(0, gameState.playerScore - 10); // Ensure score doesn't go below zero
+        gameState.score -= 10;
         gameState.consecutiveMatches = 0;
         gameState.recentMismatches++;
 
         // 30% chance to play one of the “mismatch” sounds:
-        if (Math.random() < 0.3) {
-            const feedbackSounds = [
-                sounds.keeptrying, sounds.ohno1, sounds.ohno2, sounds.heartbeat,
-                sounds.ohyeah, sounds.nopressure, sounds.areyoutrying
-            ];
-            const choice = feedbackSounds[
-                Math.floor(Math.random() * feedbackSounds.length)
-            ];
-            choice.play();
-        }
-      }
+if (Math.random() < 0.3) {
+  const feedbackSounds = [
+    sounds.keeptrying,
+    sounds.ohno1,
+    sounds.ohno2,
+    sounds.heartbeat,
+    sounds.ohyeah,
+    sounds.nopressure,
+    sounds.areyoutrying
+  ];
+  const choice = feedbackSounds[
+    Math.floor(Math.random() * feedbackSounds.length)
+  ];
+  choice.play();
+}
+
+}
 
       gameState.flippedCards = [];
       updateDisplay();
@@ -1203,24 +1043,8 @@
     }
 
     function updateDisplay() {
-      if (gameState.gameMode === 'solo') {
-        document.getElementById('score').textContent = gameState.playerScore;
-        document.getElementById('moves').textContent = gameState.moves;
-        document.getElementById('turnIndicator').style.display = 'none'; // Hide turn indicator in solo
-      } else { // vsPortia mode
-        document.getElementById('score').innerHTML = `Player: <span id="playerScore">${gameState.playerScore}</span> | Portia: <span id="portiaScore">${gameState.portiaScore}</span>`;
-        document.getElementById('moves').textContent = gameState.moves; // Moves are still global
-        const turnIndicator = document.getElementById('turnIndicator');
-        turnIndicator.style.display = 'block';
-        turnIndicator.textContent = gameState.isPortiaTurn ? "Portia's turn..." : "Your turn!";
-        // Add special class for Portia's turn for visual cue (optional)
-        if (gameState.isPortiaTurn) {
-            turnIndicator.classList.add('portia-turn-indicator');
-        } else {
-            turnIndicator.classList.remove('portia-turn-indicator');
-        }
-      }
-
+      document.getElementById('score').textContent = gameState.score;
+      document.getElementById('moves').textContent = gameState.moves;
       document.getElementById('hintsRemaining').textContent = gameState.hintsRemaining;
       const minutes = Math.floor(gameState.timer / 60);
       const seconds = gameState.timer % 60;
@@ -1231,52 +1055,14 @@
     function gameWon() {
       clearInterval(gameState.timerInterval);
       const bonusPoints = Math.max(0, 500 - (gameState.moves * 10) - (gameState.timer * 2));
-
-      let victoryMessageText = '';
-      if (gameState.gameMode === 'solo') {
-        gameState.playerScore += bonusPoints;
-        victoryMessageText = `
-          <p>You matched all Characters!</p>
-          <p>Moves: ${gameState.moves}</p>
-          <p>Time: ${Math.floor(gameState.timer / 60)}:${(gameState.timer % 60).toString().padStart(2, '0')}</p>
-          <p>Final Score: ${gameState.playerScore}</p>
-        `;
-      } else { // vsPortia mode
-        let winnerName = '';
-        let winnerScore = 0;
-        let loserScore = 0;
-        let sarcasticComment = '';
-
-        if (gameState.playerPairs > gameState.portiaPairs) {
-          winnerName = gameState.playerName || "Player";
-          winnerScore = gameState.playerScore;
-          loserScore = gameState.portiaScore;
-          sounds.victory.play();
-          sarcasticComment = "Hmph. Beginner's luck, I suppose. Don't expect it again.";
-        } else if (gameState.portiaPairs > gameState.playerPairs) {
-          winnerName = "Portia";
-          winnerScore = gameState.portiaScore;
-          loserScore = gameState.playerScore;
-          sounds.portia_laugh.play(); // Portia laughs
-          sarcasticComment = "Predictable. You really thought you could outsmart me? Come back when you've learned something.";
-        } else {
-          winnerName = "It's a Draw!";
-          winnerScore = gameState.playerScore; // Both scores are equal
-          loserScore = gameState.portiaScore;
-          sounds.portia_concede.play(); // Portia might concede grudgingly
-          sarcasticComment = "A draw? How... unsatisfying. Let's not make a habit of this, shall we?";
-        }
-
-        victoryMessageText = `
-          <h2>Game Over!</h2>
-          <p>Player Matched: ${gameState.playerPairs} pairs (${gameState.playerScore} points)</p>
-          <p>Portia Matched: ${gameState.portiaPairs} pairs (${gameState.portiaScore} points)</p>
-          <p>Winner: ${winnerName}!</p>
-          <p class="sarcastic-comment">${sarcasticComment}</p>
-        `;
-      }
-
-      document.getElementById('victoryText').innerHTML = victoryMessageText;
+      gameState.score += bonusPoints;
+      sounds.victory.play();
+      document.getElementById('victoryText').innerHTML = `
+        <p>You matched all Characters!</p>
+        <p>Moves: ${gameState.moves}</p>
+        <p>Time: ${Math.floor(gameState.timer / 60)}:${(gameState.timer % 60).toString().padStart(2, '0')}</p>
+        <p>Final Score: ${gameState.score}</p>
+      `;
       document.getElementById('victoryMessage').style.display = 'block';
       saveHighScore();
     }
@@ -1290,10 +1076,6 @@
     }
 
     function showHint() {
-      if (gameState.gameMode === 'vsPortia') {
-        alert("Hints are not available in Player vs Portia mode!");
-        return;
-      }
       if (gameState.hintsRemaining <= 0) {
         alert("You're out of hints!");
         return;
@@ -1302,14 +1084,11 @@
         const flippedCard = gameState.flippedCards[0];
         const matchingCard = gameState.cards.find(card =>
           card.matchId === flippedCard.card.matchId &&
-          card.id !== flippedCard.card.id && // Ensure it's not the same card element
-          !document.querySelector(`[data-index="${gameState.cards.indexOf(card)}"]`).classList.contains('matched') // Ensure it's not already matched
+          card.id !== flippedCard.card.id
         );
-
         if (matchingCard) {
           const matchingIndex = gameState.cards.indexOf(matchingCard);
           const matchingElement = document.querySelector(`[data-index="${matchingIndex}"]`);
-          
           if (!matchingElement.classList.contains('matched')) {
             gameState.hintsRemaining--;
             gameState.usedHintThisTurn = true;
@@ -1320,128 +1099,28 @@
               matchingElement.classList.remove('hint-glow');
             }, 2000);
           }
-        } else {
-            alert("Could not find a match for the currently flipped card.");
         }
       } else {
         alert("Flip one card first to get a hint for its match!");
       }
     }
 
-    // Portia's AI Logic
-    const portiaAI = {
-        getKnownMatches() {
-            const potentialMatches = {};
-            gameState.portiaKnownCards.forEach(card => {
-                if (!document.querySelector(`[data-index="${card.index}"]`).classList.contains('matched')) {
-                    if (potentialMatches[card.matchId]) {
-                        potentialMatches[card.matchId].push(card.index);
-                    } else {
-                        potentialMatches[card.matchId] = [card.index];
-                    }
-                }
-            });
-
-            for (const matchId in potentialMatches) {
-                if (potentialMatches[matchId].length >= 2) {
-                    return [potentialMatches[matchId][0], potentialMatches[matchId][1]];
-                }
-            }
-            return null; // No known matches
-        },
-
-        getRandomMove() {
-            const unflippedIndexes = [];
-            gameState.cards.forEach((card, index) => {
-                const cardElement = document.querySelector(`[data-index="${index}"]`);
-                if (!cardElement.classList.contains('flipped') && !cardElement.classList.contains('matched')) {
-                    unflippedIndexes.push(index);
-                }
-            });
-
-            if (unflippedIndexes.length < 2) return null;
-
-            const firstPickIndex = Math.floor(Math.random() * unflippedIndexes.length);
-            const firstCardIndex = unflippedIndexes[firstPickIndex];
-            unflippedIndexes.splice(firstPickIndex, 1); // Remove the first picked card
-
-            const secondPickIndex = Math.floor(Math.random() * unflippedIndexes.length);
-            const secondCardIndex = unflippedIndexes[secondPickIndex];
-
-            return [firstCardIndex, secondCardIndex];
-        },
-
-        async makeMove() {
-            sounds.portia_thinking.play();
-            let move = this.getKnownMatches();
-
-            if (move) {
-                console.log("Portia found a match!");
-            } else {
-                move = this.getRandomMove();
-            }
-
-            if (!move) {
-                // Should not happen if game is not over, but as a safeguard
-                console.log("Portia couldn't find a move.");
-                return;
-            }
-
-            // Simulate thinking time
-            const cardElement1 = document.querySelector(`[data-index="${move[0]}"]`);
-            cardElement1.classList.add('portia-thinking'); // Add thinking visual
-            await new Promise(resolve => setTimeout(resolve, 800)); // Short pause
-
-            flipCard(move[0]);
-            await new Promise(resolve => setTimeout(resolve, 800)); // Pause after first flip
-
-            const cardElement2 = document.querySelector(`[data-index="${move[1]}"]`);
-            if (cardElement2) cardElement2.classList.add('portia-thinking'); // Add thinking visual to second card
-            await new Promise(resolve => setTimeout(resolve, 800)); // Short pause
-
-            flipCard(move[1]);
-            // The handleVSPortiaResult will be called by flipCard which then determines the next turn.
-
-            // Remove thinking glow after cards are processed (either matched or flipped back)
-            setTimeout(() => {
-                if (cardElement1) cardElement1.classList.remove('portia-thinking');
-                if (cardElement2) cardElement2.classList.remove('portia-thinking');
-            }, 1200); // Give enough time for flip animation and match/mismatch processing
-        }
-    };
-
-    function portiasTurn() {
-        if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
-            gameWon(); // Game might have ended before Portia's turn if last match was player's
-            return;
-        }
-        gameState.isPortiaTurn = true;
-        updateDisplay();
-        portiaAI.makeMove();
-    }
-
-
     function saveHighScore() {
       if (!gameState.playerName) {
         gameState.playerName = document.getElementById('playerName').value || "Anonymous";
       }
       const highScores = JSON.parse(localStorage.getItem('conclaveArcanaHighScores')) || [];
-
-      // Only save high scores for solo mode
-      if (gameState.gameMode === 'solo') {
-          highScores.push({
-            name: gameState.playerName,
-            score: gameState.playerScore,
-            difficulty: gameState.difficulty,
-            time: gameState.timer,
-            date: new Date().toISOString()
-          });
-          highScores.sort((a, b) => b.score - a.score);
-          if (highScores.length > 10) highScores.length = 10;
-          localStorage.setItem('conclaveArcanaHighScores', JSON.stringify(highScores));
-          loadHighScores();
-      }
-      // High scores for vs Portia could be separate if needed, but not requested here
+      highScores.push({
+        name: gameState.playerName,
+        score: gameState.score,
+        difficulty: gameState.difficulty,
+        time: gameState.timer,
+        date: new Date().toISOString()
+      });
+      highScores.sort((a, b) => b.score - a.score);
+      if (highScores.length > 10) highScores.length = 10;
+      localStorage.setItem('conclaveArcanaHighScores', JSON.stringify(highScores));
+      loadHighScores();
     }
 
     function loadHighScores() {
@@ -1474,6 +1153,7 @@
       }, 2500);
     }
 
+    document.getElementById('difficulty').addEventListener('change', newGame);
   </script>
 <script>
 function closeIntroModal() {
