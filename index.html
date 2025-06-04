@@ -1001,8 +1001,11 @@ function checkMatch() {
         let basePoints = 100;
         let bonus = 0;
 
-        // 🎯 Bonus point rules
+        // ✅ Bonus + Audio by streak count
         switch (gameState.consecutiveMatches) {
+            case 1:
+                sounds.correct.play();
+                break;
             case 2:
                 bonus = 50;
                 sounds.twoinarow.play();
@@ -1016,7 +1019,7 @@ function checkMatch() {
                 if (sounds.fourinarow) {
                     sounds.fourinarow.play();
                 } else {
-                    sounds.threeinarow.play();
+                    sounds.threeinarow.play(); // fallback
                 }
                 break;
             case 5:
@@ -1026,32 +1029,27 @@ function checkMatch() {
                 break;
         }
 
-        // Fallback for 1st match
-        if (gameState.consecutiveMatches === 1) {
-            sounds.correct.play();
-        }
+        gameState.score += basePoints + bonus;
 
-        const totalPoints = basePoints + bonus;
-        gameState.score += totalPoints;
-
-        // 🎉 Show bonus notification if bonus > 0
+        // 🎉 Show bonus message if there was a bonus
         if (bonus > 0) {
             showBonusNotification(`🔥 Streak x${gameState.consecutiveMatches}! +${bonus} bonus`);
         }
 
-        // Optional: Give a hint every 5 matches
+        // 🎁 Extra hint every 5 matches
         if (gameState.matchedPairs % 5 === 0) {
             gameState.hintsRemaining++;
             sounds.extrapickup.play();
             showBonusNotification(`✨ Bonus Hint Earned! (${gameState.hintsRemaining} total)`);
         }
 
+        // 🏆 Game complete check
         if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
             gameWon();
         }
 
     } else {
-        // Mismatch
+        // ❌ Mismatch
         card1.element.classList.remove('flipped');
         card2.element.classList.remove('flipped');
         gameState.score -= 10;
@@ -1069,7 +1067,6 @@ function checkMatch() {
     gameState.flippedCards = [];
     updateDisplay();
 }
-
 
 function startTimer() {
     gameState.timerInterval = setInterval(() => {
@@ -1208,6 +1205,17 @@ function loadHighScores() {
         
         tbody.appendChild(row);
     });
+}
+
+function showBonusNotification(message) {
+    const streakEl = document.getElementById('streakIndicator');
+    streakEl.textContent = message;
+    streakEl.classList.add('show');
+
+    clearTimeout(streakEl.hideTimeout);
+    streakEl.hideTimeout = setTimeout(() => {
+        streakEl.classList.remove('show');
+    }, 2500);
 }
 
 // Event listeners
