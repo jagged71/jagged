@@ -85,6 +85,23 @@
       background: rgba(255, 215, 0, 0.2);
       border-color: rgba(255, 215, 0, 0.4);
     }
+    /* Add PC Score style */
+    .score.pc-score {
+      background: rgba(255, 255, 255, 0.1);
+      padding: clamp(8px, 2vw, 10px) clamp(15px, 4vw, 20px);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffab00;
+    }
+    /* Turn Indicator style */
+    .turn-indicator {
+      margin-bottom: 20px;
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      font-weight: bold;
+      color: #ffd700;
+      text-align: center;
+    }
     .game-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(clamp(80px, 12vw, 120px), 1fr));
@@ -432,69 +449,25 @@
 .header p {
   margin: 0;
 }
-</style>
-<style>
-.branding-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 900px;
-  margin: 10px auto 30px auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
 
-.logo {
-  height: auto;
-  max-height: 50px;
-  max-width: 40%;
-  object-fit: contain;
-}
-
-.footer-links {
-  margin-top: 20px;
+/* === VS PC MODE CSS ADDITIONS === */
+#modeSelectContainer {
+  margin: 20px 0 10px;
   text-align: center;
-  font-size: 2rem;
-  opacity: 0.85;
 }
-
-.footer-links a {
-  color: #ffd700;
-  text-decoration: none;
-  margin: 0 10px;
-  transition: color 0.3s ease;
-}
-
-.footer-links a:hover {
-  color: #ffffff;
-}
-
-.intro-modal {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-}
-
-.modal-content {
-  text-align: center;
-  background: #222;
-  padding: 40px;
-  border-radius: 12px;
-  color: #fff;
-  max-width: 90%;
-}
-
-.modal-content h2 {
-  color: #ffd700;
+#modeSelect {
+  font-size: 1rem;
+  padding: 7px 12px;
+  border-radius: 5px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  cursor: pointer;
 }
 </style>
 </head>
-<body><div class="header branding-inline"><img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/><h1>⚔️ Conclave Arcana Memory Game ⚔️</h1><p>Match the character images!</p><img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/></div>
+<body>
+<div class="header branding-inline"><img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/><h1>⚔️ Conclave Arcana Memory Game ⚔️</h1><p>Match the character images!</p><img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/></div>
 <!-- 1. ✅ HEADER BRANDING SECTION -->
 <!-- 2. ✅ FOOTER BRANDING LINKS -->
 <footer class="footer-links">
@@ -517,6 +490,16 @@
 <label for="playerName">Your Name: </label>
 <input id="playerName" placeholder="Enter your name" type="text"/>
 </div>
+
+<!-- === VS PC MODE: Add Mode Selector === -->
+<div id="modeSelectContainer">
+  <label for="modeSelect"><strong>Game Mode:</strong> </label>
+  <select id="modeSelect" title="Select Game Mode">
+    <option value="single">Single Player</option>
+    <option value="vsportia">VS Portia (PC)</option>
+  </select>
+</div>
+
 <div class="difficulty-selector">
 <label for="difficulty">Difficulty: </label>
 <select id="difficulty">
@@ -526,12 +509,17 @@
 <option value="crazy">Crazy (144 cards)</option>
 </select>
 </div>
-<div class="game-info">
-<div class="score">Score: <span id="score">0</span></div>
+<div class="game-info" style="justify-content: center; gap: 20px;">
+<div class="score">Player Score: <span id="score">0</span></div>
+<div class="score pc-score" style="display:none;">Portia Score: <span id="pcScore">0</span></div>
 <div class="moves">Moves: <span id="moves">0</span></div>
 <div class="timer">Time: <span id="timer">00:00</span></div>
 <div class="hints-remaining">Hints: <span id="hintsRemaining">2</span></div>
 </div>
+
+<!-- === VS PC MODE: Turn Indicator === -->
+<div class="turn-indicator" id="turnIndicator" style="display:none;">Your turn</div>
+
 <div class="streak-indicator" id="streakIndicator">
     🔥 Streak: <span id="streakCount">0</span>
 </div>
@@ -549,7 +537,7 @@
 <label for="sfxVolume">SFX Volume:</label>
 <input id="sfxVolume" max="1" min="0" step="0.01" type="range" value="1"/>
 </div>
-<div class="victory-message" id="victoryMessage">
+<div class="victory-message" id="victoryMessage" role="alert" aria-live="assertive" aria-atomic="true">
 <h2>🎉 Victory! 🎉</h2>
 <p id="victoryText"></p>
 <button class="btn" onclick="hideVictory()">Play Again</button>
@@ -571,7 +559,9 @@
 </tbody>
 </table>
 </div>
+
 <script>
+    // Your existing music and sounds code
     const music = {
       themes: [
         new Audio('sounds/Fire of Praetoria.mp3'),
@@ -800,23 +790,83 @@
       { name: "Inept Healer", image: "Inept Healer.png" }
     ];
 
-    let gameState = {
+
+    // === VS PC MODE START ===
+
+    // We add new variables to manage VS PC mode state:
+    const pcName = "Portia";
+
+    let isVsPcMode = false;
+
+    // PC Score element
+    const pcScoreElement = document.querySelector('.score.pc-score');
+    const turnIndicator = document.getElementById('turnIndicator');
+
+    // PC remembered cards: key = matchId, value = array of card indexes known to PC
+    let pcMemory = new Map();
+
+    // Current turn: 'player' or 'pc'
+    let currentTurn = 'player';
+
+    // Track moves by each player for scores
+    let playerScore = 0;
+    let pcScore = 0;
+
+    // Cards chosen/flipped in current turn
+    let flippedCards = [];
+
+    // Control timer interval for single player mode (reuse existing)
+    let timerActive = false;
+
+    // Set to true to lock input (while cards are auto-flipping or PC thinking)
+    let isInputLocked = false;
+
+    // Sarcastic lines for Portia
+    const portiaSarcasticLinesWin = [
+      "Hah! Easy game. Challenge me again if you dare!",
+      "Portia dominates once more! Better luck next time.",
+      "You really thought you could beat me? Cute.",
+      "Another win for Portia! Feel free to try again when ready."
+    ];
+
+    const portiaSarcasticLinesLose = [
+      "No... That can't be! Rematch me and I'll crush you!",
+      "You got lucky... Try again to prove it wasn't a fluke.",
+      "Portia's ego bruised, but not broken. Challenge me again!",
+      "I let you win... Just this once. Ready for a real challenge?"
+    ];
+
+    // Reference to game state from original structure (cards array is reused)
+    // We'll override the cards array for VS PC mode
+    let vsPcGameState = {
       cards: [],
-      flippedCards: [],
-      matchedPairs: 0,
       moves: 0,
+      matchedPairs: 0,
       score: 0,
       timer: 0,
-      gameStarted: false,
       timerInterval: null,
-      difficulty: 'medium',
-      playerName: '',
       hintsRemaining: 2,
+      playerName: '',
       consecutiveMatches: 0,
       recentMismatches: 0,
       usedHintThisTurn: false
     };
 
+    // Grab controls and elements we update
+    const scoreElement = document.getElementById('score');
+    const movesElement = document.getElementById('moves');
+    const hintsRemainingElement = document.getElementById('hintsRemaining');
+    const timerElement = document.getElementById('timer');
+    const gameContainer = document.getElementById('gameContainer');
+    const difficultySelect = document.getElementById('difficulty');
+    const playerNameInput = document.getElementById('playerName');
+    const modeSelect = document.getElementById('modeSelect');
+    const victoryMessageContainer = document.getElementById('victoryMessage');
+    const victoryTextElement = document.getElementById('victoryText');
+    const streakIndicator = document.getElementById('streakIndicator');
+    const hintBtn = document.getElementById('hintBtn');
+
+    // Base difficulty config
     const difficulties = {
       easy: { pairs: 8, grid: 4 },
       medium: { pairs: 18, grid: 6 },
@@ -824,325 +874,498 @@
       crazy: { pairs: 72, grid: 12 }
     };
 
-    window.onload = function() {
-      initGame();
-      loadHighScores();
-      document.getElementById('playerName').addEventListener('change', function() {
-        gameState.playerName = this.value;
-      });
-    };
-
-    function initGame() {
-      const difficulty = document.getElementById('difficulty').value;
-      gameState.difficulty = difficulty;
-      gameState.hintsRemaining = 2;
-      gameState.consecutiveMatches = 0;
-      gameState.recentMismatches = 0;
-      gameState.usedHintThisTurn = false;
-
-      const pairCount = difficulties[difficulty].pairs;
-      const gridSize = difficulties[difficulty].grid;
-      const container = document.getElementById('gameContainer');
-
-      const shuffledCharacters = [...conclaveCharacters];
-      for (let i = shuffledCharacters.length - 1; i > 0; i--) {
+    // Shuffle utility (Fisher-Yates)
+    function shuffleArray(array) {
+      let arr = array.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [shuffledCharacters[i], shuffledCharacters[j]] = [shuffledCharacters[j], shuffledCharacters[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
-      const selectedCharacters = shuffledCharacters.slice(0, pairCount);
+      return arr;
+    }
 
-      gameState.cards = [];
-      selectedCharacters.forEach((char, index) => {
-        gameState.cards.push(
+    // Setup event listeners for controls changes
+    modeSelect.addEventListener('change', () => {
+      isVsPcMode = modeSelect.value === 'vsportia';
+      // Show or hide PC score and turn indicator accordingly
+      pcScoreElement.style.display = isVsPcMode ? 'block' : 'none';
+      turnIndicator.style.display = isVsPcMode ? 'block' : 'none';
+      newGame();
+    });
+
+    difficultySelect.addEventListener('change', () => {
+      newGame();
+    });
+
+    playerNameInput.addEventListener('change', () => {
+      vsPcGameState.playerName = playerNameInput.value.trim() || 'Anonymous';
+    });
+
+    // Initialize by setting mode and playerName
+    isVsPcMode = modeSelect.value === 'vsportia';
+    pcScoreElement.style.display = isVsPcMode ? 'block' : 'none';
+    turnIndicator.style.display = isVsPcMode ? 'block' : 'none';
+    vsPcGameState.playerName = playerNameInput.value.trim() || 'Anonymous';
+
+    // === CORE GAME LOGIC ===
+
+    /**
+     * Initialize game for VS PC mode
+     */
+    function initGameVsPc() {
+      // Reset game state for VS PC mode
+      vsPcGameState.moves = 0;
+      vsPcGameState.matchedPairs = 0;
+      playerScore = 0;
+      pcScore = 0;
+      currentTurn = 'player'; // Player always starts
+      pcMemory.clear();
+      flippedCards = [];
+      isInputLocked = false;
+      vsPcGameState.hintsRemaining = 2;
+      vsPcGameState.timer = 0;
+
+      // Clear old timer interval if any
+      if (vsPcGameState.timerInterval) {
+        clearInterval(vsPcGameState.timerInterval);
+        vsPcGameState.timerInterval = null;
+      }
+
+      // Setup cards array: same logic as your old game but paired differently:
+      // For each pair: one card with image, one with name, matched by matchId
+
+      const difficulty = difficultySelect.value;
+      const pairCount = difficulties[difficulty].pairs;
+
+      // Shuffle & slice - copy characters so we can randomly select pairs
+      const shuffledCharacters = shuffleArray(conclaveCharacters);
+      const selectedChars = shuffledCharacters.slice(0, pairCount);
+
+      vsPcGameState.cards = [];
+
+      // Create pairs (image card and name card)
+      selectedChars.forEach((char, index) => {
+        vsPcGameState.cards.push(
           { id: `img_${index}`, type: 'image', character: char, matchId: index },
           { id: `name_${index}`, type: 'name', character: char, matchId: index }
         );
       });
 
-      for (let i = gameState.cards.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [gameState.cards[i], gameState.cards[j]] = [gameState.cards[j], gameState.cards[i]];
-      }
+      // Shuffle cards again
+      vsPcGameState.cards = shuffleArray(vsPcGameState.cards);
 
-      gameState.flippedCards = [];
-      gameState.matchedPairs = 0;
-      gameState.moves = 0;
-      gameState.score = 0;
-      gameState.timer = 0;
-      gameState.gameStarted = false;
-      if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+      // Reset UI and render cards
+      updateScoreboard();
+      updateMoves();
+      updateHints();
+      updateTimerDisplay();
+      renderCardsVsPc();
 
-      updateDisplay();
-      renderCards();
+      setTurnIndicator(currentTurn);
+
+      startTimerVsPc();
     }
 
-    function renderCards() {
-      const container = document.getElementById('gameContainer');
-      container.innerHTML = '';
-      gameState.cards.forEach((card, index) => {
+    /**
+     * Render cards for VS PC mode
+     */
+    function renderCardsVsPc() {
+      gameContainer.innerHTML = '';
+      vsPcGameState.cards.forEach((card, index) => {
         const cardElement = document.createElement('div');
         cardElement.className = 'card';
         cardElement.dataset.index = index;
-        cardElement.onclick = () => flipCard(index);
+        cardElement.setAttribute('tabindex', '0'); // keyboard accessibility
+        cardElement.setAttribute('role', 'button');
+        cardElement.setAttribute('aria-label', 'Face down card');
+        cardElement.onclick = () => handleCardClickVsPc(index);
+        cardElement.onkeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCardClickVsPc(index);
+          }
+        };
+
         cardElement.innerHTML = `
           <div class="card-inner">
             <div class="card-front">
-              <img src="${card.character.image}" alt="${card.character.name}" class="card-image" />
+              <img src="${card.character.image}" alt="${card.character.name}" class="card-image"/>
             </div>
             <div class="card-back">
-              <img src="conclave-logo.png" alt="Conclave Arcana Logo" class="card-logo" />
+              <img src="conclave-arcana-logo.png" alt="Conclave Arcana Logo" class="card-logo"/>
             </div>
           </div>
         `;
-        container.appendChild(cardElement);
+        gameContainer.appendChild(cardElement);
       });
     }
 
-    function flipCard(index) {
-      if (!gameState.gameStarted) {
-        startTimer();
-        gameState.gameStarted = true;
-      }
-      const card = gameState.cards[index];
-      const cardElement = document.querySelector(`[data-index="${index}"]`);
+    /**
+     * Handle card click in VS PC mode (player only)
+     */
+    function handleCardClickVsPc(index) {
+      if (!isVsPcMode) return;
+      if (currentTurn !== 'player') return;
+      if (isInputLocked) return;
+
+      const cardElement = gameContainer.querySelector(`.card[data-index="${index}"]`);
+      if (!cardElement) return;
+
       if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return;
-      if (gameState.flippedCards.length >= 2) return;
+      if (flippedCards.length >= 2) return;
 
       sounds.flip.play();
-      cardElement.classList.add('flipped');
-      gameState.flippedCards.push({ index, card, element: cardElement });
 
-      if (gameState.flippedCards.length === 2) {
-        gameState.moves++;
-        updateDisplay();
+      flipCard(cardElement);
+
+      flippedCards.push({ index, card: vsPcGameState.cards[index], element: cardElement });
+
+      // PC remembers card flipped by player
+      pcRememberCard(index, vsPcGameState.cards[index]);
+
+      if (flippedCards.length === 2) {
+        isInputLocked = true;
+        vsPcGameState.moves++;
+        updateMoves();
+
         setTimeout(() => {
-          checkMatch();
-          autoFlipLastTwoCards();
+          checkForMatchVsPc();
         }, 1000);
       }
     }
 
-    function autoFlipLastTwoCards() {
-      const remainingIndexes = gameState.cards
-        .map((card, idx) => ({ card, idx }))
-        .filter(({ card, idx }) => {
-          const el = document.querySelector(`[data-index="${idx}"]`);
-          return !card.matched && !el.classList.contains('flipped');
-        })
-        .map(({ idx }) => idx);
-
-      if (remainingIndexes.length === 2) {
-        setTimeout(() => {
-          remainingIndexes.forEach(idx => flipCard(idx));
-          setTimeout(() => {
-            const unmatched = document.querySelectorAll('.card:not(.matched)');
-            if (unmatched.length === 0) {
-              gameWon();
-            }
-          }, 1200);
-        }, 500);
-      }
+    /**
+     * Flip card visually (add flip class)
+     */
+    function flipCard(cardElement) {
+      cardElement.classList.add('flipped');
+      cardElement.setAttribute('aria-label', 'Card face up');
     }
 
-    function checkMatch() {
-      const [card1, card2] = gameState.flippedCards;
-      if (card1.card.matchId === card2.card.matchId) {
-        card1.element.classList.add('matched');
-        card2.element.classList.add('matched');
-        gameState.matchedPairs++;
-
-        if (gameState.usedHintThisTurn) {
-          gameState.consecutiveMatches = 0;
-          gameState.usedHintThisTurn = false;
-        } else {
-          gameState.consecutiveMatches++;
-        }
-        gameState.recentMismatches = 0;
-
-        let basePoints = 100;
-        let bonus = 0;
-
-        if (gameState.consecutiveMatches >= 1) {
-          switch (gameState.consecutiveMatches) {
-            case 1:
-              sounds.correct.play();
-              break;
-            case 2:
-              bonus = 50;
-              sounds.twoinarow.play();
-              break;
-            case 3:
-              bonus = 150;
-              sounds.threeinarow.play();
-              break;
-            case 4:
-              bonus = 500;
-              if (sounds.fourinarow) {
-                sounds.fourinarow.play();
-              } else {
-                sounds.threeinarow.play();
-              }
-              break;
-            case 5:
-            default:
-              bonus = 1000;
-              sounds.unstoppable.play();
-              break;
-          }
-        }
-
-        gameState.score += basePoints + bonus;
-        if (bonus > 0) {
-          showBonusNotification(`🔥 Streak x${gameState.consecutiveMatches}! +${bonus} bonus`);
-        }
-
-        if (gameState.matchedPairs % 5 === 0) {
-          gameState.hintsRemaining++;
-          sounds.extrapickup.play();
-          showBonusNotification(`✨ Bonus Hint Earned! (${gameState.hintsRemaining} total)`);
-        }
-
-        if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
-          gameWon();
-        }
-      } else {
-        card1.element.classList.remove('flipped');
-        card2.element.classList.remove('flipped');
-        gameState.score -= 10;
-        gameState.consecutiveMatches = 0;
-        gameState.recentMismatches++;
-
-        // 30% chance to play one of the “mismatch” sounds:
-if (Math.random() < 0.3) {
-  const feedbackSounds = [
-    sounds.keeptrying,
-    sounds.ohno1,
-    sounds.ohno2,
-    sounds.heartbeat,
-    sounds.ohyeah,
-    sounds.nopressure,
-    sounds.areyoutrying
-  ];
-  const choice = feedbackSounds[
-    Math.floor(Math.random() * feedbackSounds.length)
-  ];
-  choice.play();
-}
-
-}
-
-      gameState.flippedCards = [];
-      updateDisplay();
+    /**
+     * Flip card back (remove flip class)
+     */
+    function unflipCard(cardElement) {
+      cardElement.classList.remove('flipped');
+      cardElement.setAttribute('aria-label', 'Card face down');
     }
 
-    function startTimer() {
-      gameState.timerInterval = setInterval(() => {
-        gameState.timer++;
-        updateDisplay();
-      }, 1000);
+    /**
+     * Update scoreboard display for both players
+     */
+    function updateScoreboard() {
+      scoreElement.textContent = playerScore;
+      pcScoreElement.textContent = pcScore;
     }
 
-    function updateDisplay() {
-      document.getElementById('score').textContent = gameState.score;
-      document.getElementById('moves').textContent = gameState.moves;
-      document.getElementById('hintsRemaining').textContent = gameState.hintsRemaining;
-      const minutes = Math.floor(gameState.timer / 60);
-      const seconds = gameState.timer % 60;
-      document.getElementById('timer').textContent =
-        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    function updateMoves() {
+      movesElement.textContent = vsPcGameState.moves;
     }
 
-    function gameWon() {
-      clearInterval(gameState.timerInterval);
-      const bonusPoints = Math.max(0, 500 - (gameState.moves * 10) - (gameState.timer * 2));
-      gameState.score += bonusPoints;
-      sounds.victory.play();
-      document.getElementById('victoryText').innerHTML = `
-        <p>You matched all Characters!</p>
-        <p>Moves: ${gameState.moves}</p>
-        <p>Time: ${Math.floor(gameState.timer / 60)}:${(gameState.timer % 60).toString().padStart(2, '0')}</p>
-        <p>Final Score: ${gameState.score}</p>
-      `;
-      document.getElementById('victoryMessage').style.display = 'block';
-      saveHighScore();
+    function updateHints() {
+      hintsRemainingElement.textContent = vsPcGameState.hintsRemaining;
     }
 
-    function hideVictory() {
-      document.getElementById('victoryMessage').style.display = 'none';
-      newGame();
-    }
-    function newGame() {
-      initGame();
+    function updateTimerDisplay() {
+      const minutes = Math.floor(vsPcGameState.timer / 60);
+      const seconds = vsPcGameState.timer % 60;
+      timerElement.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
     }
 
-    function showHint() {
-      if (gameState.hintsRemaining <= 0) {
-        alert("You're out of hints!");
+    /**
+     * Set turn indicator text
+     */
+    function setTurnIndicator(turn) {
+      if (!isVsPcMode) {
+        turnIndicator.style.display = 'none';
         return;
       }
-      if (gameState.flippedCards.length === 1) {
-        const flippedCard = gameState.flippedCards[0];
-        const matchingCard = gameState.cards.find(card =>
-          card.matchId === flippedCard.card.matchId &&
-          card.id !== flippedCard.card.id
-        );
-        if (matchingCard) {
-          const matchingIndex = gameState.cards.indexOf(matchingCard);
-          const matchingElement = document.querySelector(`[data-index="${matchingIndex}"]`);
-          if (!matchingElement.classList.contains('matched')) {
-            gameState.hintsRemaining--;
-            gameState.usedHintThisTurn = true;
-            updateDisplay();
-            sounds.pickle.play();
-            matchingElement.classList.add('hint-glow');
-            setTimeout(() => {
-              matchingElement.classList.remove('hint-glow');
-            }, 2000);
+      turnIndicator.style.display = 'block';
+      if (turn === 'player') {
+        turnIndicator.textContent = "Your turn";
+      } else {
+        turnIndicator.textContent = "Portia's turn";
+      }
+    }
+
+    function startTimerVsPc() {
+      if (vsPcGameState.timerInterval) {
+        clearInterval(vsPcGameState.timerInterval);
+      }
+      vsPcGameState.timerInterval = setInterval(() => {
+        vsPcGameState.timer++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+    function stopTimerVsPc() {
+      if (vsPcGameState.timerInterval) {
+        clearInterval(vsPcGameState.timerInterval);
+        vsPcGameState.timerInterval = null;
+      }
+    }
+
+    /**
+     * Check the two flipped cards for match in VS PC mode
+     */
+    function checkForMatchVsPc() {
+      const [first, second] = flippedCards;
+      if (!first || !second) {
+        isInputLocked = false;
+        return;
+      }
+
+      // Match if matchId equal
+      if (first.card.matchId === second.card.matchId) {
+        // Matched!
+        first.element.classList.add('matched');
+        second.element.classList.add('matched');
+        playerScore++;
+        updateScoreboard();
+
+        // Clear flipped cards array for next turn
+        flippedCards = [];
+        isInputLocked = false;
+
+        sounds.correct.play();
+
+        // PC forgets matched cards from memory
+        pcForgetCard(first.index, first.card.matchId);
+        pcForgetCard(second.index, second.card.matchId);
+
+        vsPcGameState.matchedPairs++;
+
+        // Bonus: increase hints every 5 matched pairs
+        if (vsPcGameState.matchedPairs % 5 === 0) {
+          vsPcGameState.hintsRemaining++;
+          updateHints();
+          sounds.extrapickup.play();
+          showBonusNotification(`✨ Bonus Hint Earned! (${vsPcGameState.hintsRemaining} total)`);
+        }
+
+        // Check if game is won
+        if (vsPcGameState.matchedPairs === difficulties[difficultySelect.value].pairs) {
+          gameWonVsPc('player');
+          return;
+        }
+
+        // Player gets to go again
+        setTurnIndicator('player');
+      } else {
+        // No match
+        setTimeout(() => {
+          unflipCard(first.element);
+          unflipCard(second.element);
+          flippedCards = [];
+          isInputLocked = false;
+          // Switch turn to PC
+          currentTurn = 'pc';
+          setTurnIndicator('pc');
+          pcTurn();
+        }, 1000);
+
+        // Penalty for incorrect match: decrease score by 10 (min 0)
+        playerScore = Math.max(0, playerScore - 10);
+        updateScoreboard();
+
+        // Play mismatch sound randomly
+        if (Math.random() < 0.3) {
+          const feedbackSounds = [
+            sounds.keeptrying,
+            sounds.ohno1,
+            sounds.ohno2,
+            sounds.heartbeat,
+            sounds.ohyeah,
+            sounds.nopressure,
+            sounds.areyoutrying
+          ];
+          const choice = feedbackSounds[Math.floor(Math.random() * feedbackSounds.length)];
+          choice.play();
+        }
+      }
+    }
+
+    /**
+     * PC "Portia" turn logic: she flips cards automatically with memory and retries until fail
+     * Asynchronous flow for smooth UX
+     */
+    async function pcTurn() {
+      isInputLocked = true;
+
+      while (currentTurn === 'pc' && vsPcGameState.matchedPairs < difficulties[difficultySelect.value].pairs) {
+        // PC chooses a pair
+        let pair = pcFindKnownPair();
+        if (!pair) {
+          // If PC has no known pair, choose two random unmatched cards to flip
+          pair = pcPickRandomPair();
+          if (!pair) break;
+        }
+
+        // Flip first card
+        flipCard(gameContainer.querySelector(`.card[data-index="${pair[0]}"]`));
+        pcRememberCard(pair[0], vsPcGameState.cards[pair[0]]);
+        sounds.flip.play();
+        await delay(700);
+
+        // Flip second card
+        flipCard(gameContainer.querySelector(`.card[data-index="${pair[1]}"]`));
+        pcRememberCard(pair[1], vsPcGameState.cards[pair[1]]);
+        sounds.flip.play();
+        await delay(800);
+
+        // Check if match
+        if (vsPcGameState.cards[pair[0]].matchId === vsPcGameState.cards[pair[1]].matchId) {
+          // Matched
+          pcScore++;
+          updateScoreboard();
+
+          pcForgetCard(pair[0], vsPcGameState.cards[pair[0]].matchId);
+          pcForgetCard(pair[1], vsPcGameState.cards[pair[1]].matchId);
+
+          gameContainer.querySelector(`.card[data-index="${pair[0]}"]`).classList.add('matched');
+          gameContainer.querySelector(`.card[data-index="${pair[1]}"]`).classList.add('matched');
+
+          vsPcGameState.matchedPairs++;
+
+          sounds.correct.play();
+
+          if (vsPcGameState.matchedPairs === difficulties[difficultySelect.value].pairs) {
+            gameWonVsPc('pc');
+            return;
+          }
+
+          // PC gets another turn immediately
+          await delay(900);
+          continue;
+        } else {
+          // Not a match
+          await delay(1200);
+
+          // Flip cards back
+          unflipCard(gameContainer.querySelector(`.card[data-index="${pair[0]}"]`));
+          unflipCard(gameContainer.querySelector(`.card[data-index="${pair[1]}"]`));
+          sounds.keeptrying.play();
+
+          // PC remembers card positions (already saved)
+          // Turn ends, switch to player
+          currentTurn = 'player';
+          setTurnIndicator('player');
+          isInputLocked = false;
+          return;
+        }
+      }
+
+      // If loop ended without winner, return control to player
+      currentTurn = 'player';
+      setTurnIndicator('player');
+      isInputLocked = false;
+    }
+
+    /**
+     * PC remembers a card flipped: add to pcMemory map if unmatched
+     */
+    function pcRememberCard(index, card) {
+      if (gameContainer.querySelector(`.card[data-index="${index}"]`).classList.contains('matched')) return;
+      const matchId = card.matchId;
+      if (!pcMemory.has(matchId)) pcMemory.set(matchId, []);
+      const arr = pcMemory.get(matchId);
+      if (!arr.includes(index)) arr.push(index);
+    }
+
+    /**
+     * PC forgets cards matched (remove from memory)
+     */
+    function pcForgetCard(index, matchId) {
+      if (!pcMemory.has(matchId)) return;
+      const arr = pcMemory.get(matchId);
+      const idx = arr.indexOf(index);
+      if (idx > -1) arr.splice(idx, 1);
+      if (arr.length === 0) pcMemory.delete(matchId);
+    }
+
+    /**
+     * PC tries to find known matching pair from memory, returns pair of indexes or null
+     */
+    function pcFindKnownPair() {
+      for (const [matchId, indexes] of pcMemory.entries()) {
+        // Only return if two or more card indexes known and at least two unmatched cards
+        if (indexes.length >= 2) {
+          // Exclude matched cards (should not be in memory, but just in case)
+          const unmatched = indexes.filter(i => !gameContainer.querySelector(`.card[data-index="${i}"]`).classList.contains('matched'));
+          if (unmatched.length >= 2) {
+            return [unmatched[0], unmatched[1]];
           }
         }
+      }
+      return null;
+    }
+
+    /**
+     * PC picks two random unmatched cards (different indexes)
+     */
+    function pcPickRandomPair() {
+      const unmatched = [];
+      gameContainer.querySelectorAll('.card').forEach(card => {
+        if (!card.classList.contains('matched') && !card.classList.contains('flipped')) {
+          unmatched.push(parseInt(card.dataset.index));
+        }
+      });
+      if (unmatched.length < 2) return null;
+      // Shuffle unmatched and pick first two
+      const shuffled = shuffleArray(unmatched);
+      return [shuffled[0], shuffled[1]];
+    }
+
+    /**
+     * On game win, show victory modal with sarcastic Portia statements
+     */
+    function gameWonVsPc(winner) {
+      stopTimerVsPc();
+      isInputLocked = true;
+
+      vsPcGameState.score = playerScore;
+
+      // Prepare victory text
+      let message = '';
+      if (winner === 'player') {
+        message = `<p>You beat Portia!</p>
+          <p>Moves: ${vsPcGameState.moves}</p>
+          <p>Time: ${Math.floor(vsPcGameState.timer / 60)}:${(vsPcGameState.timer % 60).toString().padStart(2, '0')}</p>
+          <p>Final Score: ${playerScore}</p><br/>
+          <em>${portiaSarcasticLinesLose[Math.floor(Math.random() * portiaSarcasticLinesLose.length)]}</em>`;
+        sounds.victory.play();
       } else {
-        alert("Flip one card first to get a hint for its match!");
+        message = `<p>Portia wins!</p>
+          <p>Moves: ${vsPcGameState.moves}</p>
+          <p>Time: ${Math.floor(vsPcGameState.timer / 60)}:${(vsPcGameState.timer % 60).toString().padStart(2, '0')}</p>
+          <p>Final Score: ${pcScore}</p><br/>
+          <em>${portiaSarcasticLinesWin[Math.floor(Math.random() * portiaSarcasticLinesWin.length)]}</em>`;
+        sounds.victory.play();
+      }
+
+      victoryTextElement.innerHTML = message;
+      victoryMessageContainer.style.display = 'block';
+
+      // Save highscore for player only if player won
+      if (winner === 'player') {
+        saveHighScore();
+      }
+      updateScoreboard();
+      setTurnIndicator('');
+    }
+
+    // Let newGame() adapt to mode selection
+    function newGame() {
+      victoryMessageContainer.style.display = 'none';
+      if (isVsPcMode) {
+        initGameVsPc();
+      } else {
+        initGame(); // your existing single player initGame()
       }
     }
 
-    function saveHighScore() {
-      if (!gameState.playerName) {
-        gameState.playerName = document.getElementById('playerName').value || "Anonymous";
-      }
-      const highScores = JSON.parse(localStorage.getItem('conclaveArcanaHighScores')) || [];
-      highScores.push({
-        name: gameState.playerName,
-        score: gameState.score,
-        difficulty: gameState.difficulty,
-        time: gameState.timer,
-        date: new Date().toISOString()
-      });
-      highScores.sort((a, b) => b.score - a.score);
-      if (highScores.length > 10) highScores.length = 10;
-      localStorage.setItem('conclaveArcanaHighScores', JSON.stringify(highScores));
-      loadHighScores();
-    }
-
-    function loadHighScores() {
-      const highScores = JSON.parse(localStorage.getItem('conclaveArcanaHighScores')) || [];
-      const tbody = document.getElementById('highScoresBody');
-      tbody.innerHTML = '';
-      highScores.forEach((score, index) => {
-        const row = document.createElement('tr');
-        const minutes = Math.floor(score.time / 60);
-        const seconds = score.time % 60;
-        const timeString = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-        row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${score.name}</td>
-          <td>${score.score}</td>
-          <td>${score.difficulty.charAt(0).toUpperCase() + score.difficulty.slice(1)}</td>
-          <td>${timeString}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
+    /**
+     * Show bonus notification (e.g. bonus hint earned)
+     */
     function showBonusNotification(message) {
       const streakEl = document.getElementById('streakIndicator');
       streakEl.textContent = message;
@@ -1153,8 +1376,103 @@ if (Math.random() < 0.3) {
       }, 2500);
     }
 
-    document.getElementById('difficulty').addEventListener('change', newGame);
-  </script>
+    // Delay helper for async/await
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Override showHint for VS PC: hints only available on player's turn and affect PC hints remain count
+    function showHint() {
+      if (vsPcGameState.hintsRemaining <= 0) {
+        alert("You're out of hints!");
+        return;
+      }
+      if (!isVsPcMode) {
+        // Default behavior single player
+        if (vsPcGameState.flippedCards && vsPcGameState.flippedCards.length === 1) {
+          const flippedCard = vsPcGameState.flippedCards[0];
+          const matchingCard = vsPcGameState.cards.find(card =>
+            card.matchId === flippedCard.matchId &&
+            card.id !== flippedCard.id
+          );
+          if (matchingCard) {
+            const matchingIndex = vsPcGameState.cards.indexOf(matchingCard);
+            const matchingElement = document.querySelector(`[data-index="${matchingIndex}"]`);
+            if (!matchingElement.classList.contains('matched')) {
+              vsPcGameState.hintsRemaining--;
+              updateHints();
+              sounds.pickle.play();
+              matchingElement.classList.add('hint-glow');
+              setTimeout(() => {
+                matchingElement.classList.remove('hint-glow');
+              }, 2000);
+            }
+          }
+        } else {
+          alert("Flip one card first to get a hint for its match!");
+        }
+      } else {
+        // VS PC Mode hint: only on player's turn
+        if (currentTurn !== 'player') {
+          alert("Wait for your turn to get a hint.");
+          return;
+        }
+        if (flippedCards.length !== 1) {
+          alert("Flip one card first to get a hint for its match!");
+          return;
+        }
+        const flippedCard = flippedCards[0];
+
+        const matchingCard = vsPcGameState.cards.find((card, idx) =>
+          card.matchId === flippedCard.card.matchId &&
+          idx !== flippedCard.index &&
+          !(gameContainer.querySelector(`.card[data-index="${idx}"]`).classList.contains('matched'))
+        );
+
+        if (matchingCard) {
+          const matchingIndex = vsPcGameState.cards.indexOf(matchingCard);
+          const matchingElement = gameContainer.querySelector(`[data-index="${matchingIndex}"]`);
+          if (matchingElement) {
+            vsPcGameState.hintsRemaining--;
+            updateHints();
+            sounds.pickle.play();
+            matchingElement.classList.add('hint-glow');
+            setTimeout(() => {
+              matchingElement.classList.remove('hint-glow');
+            }, 2000);
+          }
+        }
+      }
+    }
+
+    /**
+     * Hide victory modal
+     */
+    function hideVictory() {
+      victoryMessageContainer.style.display = 'none';
+      newGame();
+    }
+
+    // Attach the new hideVictory to the button as your original
+    window.hideVictory = hideVictory;
+
+    // At load, hook newGame to your existing window onload
+    window.onload = function() {
+      vsPcGameState.playerName = playerNameInput.value.trim() || 'Anonymous';
+      newGame();
+      loadHighScores();
+      playerNameInput.addEventListener('change', function() {
+        vsPcGameState.playerName = this.value.trim();
+      });
+    };
+
+    // === VS PC MODE END ===
+
+    // Your existing initGame, renderCards, flipCard, checkMatches, timer, highScores etc. remain intact
+    // newGame() is overridden here to support VS PC mode
+
+    // Other existing functions...
+</script>
 <script>
 function closeIntroModal() {
   document.getElementById("introModal").style.display = "none";
