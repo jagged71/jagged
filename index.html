@@ -1010,32 +1010,34 @@ function checkMatch() {
         let basePoints = 100;
         let bonus = 0;
 
-        // ✅ Bonus + Audio by streak count
-        switch (gameState.consecutiveMatches) {
-            case 1:
-                sounds.correct.play();
-                break;
-            case 2:
-                bonus = 50;
-                sounds.twoinarow.play();
-                break;
-            case 3:
-                bonus = 150;
-                sounds.threeinarow.play();
-                break;
-            case 4:
-                bonus = 500;
-                if (sounds.fourinarow) {
-                    sounds.fourinarow.play();
-                } else {
-                    sounds.threeinarow.play(); // fallback
-                }
-                break;
-            case 5:
-            default:
-                bonus = 1000;
-                sounds.unstoppable.play();
-                break;
+        // ✅ Only apply bonus if no hint was used (i.e., streak count > 0)
+        if (gameState.consecutiveMatches >= 1) {
+            switch (gameState.consecutiveMatches) {
+                case 1:
+                    sounds.correct.play();
+                    break;
+                case 2:
+                    bonus = 50;
+                    sounds.twoinarow.play();
+                    break;
+                case 3:
+                    bonus = 150;
+                    sounds.threeinarow.play();
+                    break;
+                case 4:
+                    bonus = 500;
+                    if (sounds.fourinarow) {
+                        sounds.fourinarow.play();
+                    } else {
+                        sounds.threeinarow.play();
+                    }
+                    break;
+                case 5:
+                default:
+                    bonus = 1000;
+                    sounds.unstoppable.play();
+                    break;
+            }
         }
 
         gameState.score += basePoints + bonus;
