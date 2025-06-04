@@ -21,7 +21,7 @@
 
 .logo {
   height: auto;
-  max-height: 50px;
+  max-height: 55px;
   max-width: 40%;
   object-fit: contain;
 }
@@ -413,8 +413,16 @@
         gap: 8px;
       }
     }
-  </style>
-
+  
+.intro-modal .modal-content .btn, .intro-modal .modal-content button {
+    display: block;
+    width: 80%;
+    max-width: 250px;
+    margin: 10px auto;
+    padding: 12px 20px;
+    font-size: 1rem;
+}
+</style>
 <style>
 .branding-header {
   display: flex;
@@ -476,12 +484,12 @@
 }
 </style>
 </head>
-<body>
+<body><div class="header branding-inline"><img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/>
+
+
+<img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/></div>
 <!-- 1. ✅ HEADER BRANDING SECTION -->
-<div class="branding-header">
-<img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/>
-<img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/>
-</div>
+
 <!-- 2. ✅ FOOTER BRANDING LINKS -->
 <footer class="footer-links">
 <p>
@@ -498,11 +506,9 @@
 <button onclick="closeIntroModal()">Enter Game</button>
 </div>
 </div>
+<!-- 1. ✅ HEADER BRANDING SECTION -->
 
-<div class="header">
-<h1>⚔️ Conclave Arcana Memory Game ⚔️</h1>
-<p>Match the character images!</p>
-</div>
+
 <div class="player-name-input">
 <label for="playerName">Your Name: </label>
 <input id="playerName" placeholder="Enter your name" type="text"/>
@@ -1134,7 +1140,6 @@
 
     document.getElementById('difficulty').addEventListener('change', newGame);
   </script>
-
 <script>
 function closeIntroModal() {
   document.getElementById("introModal").style.display = "none";
