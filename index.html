@@ -992,55 +992,72 @@ function checkMatch() {
     const [card1, card2] = gameState.flippedCards;
 
     if (card1.card.matchId === card2.card.matchId) {
-        // Match found!
         card1.element.classList.add('matched');
-        card2.element.classList.add('matched');		
+        card2.element.classList.add('matched');
         gameState.matchedPairs++;
         gameState.consecutiveMatches++;
         gameState.recentMismatches = 0;
-        
-        // Play appropriate match sound based on streak
-        if (gameState.consecutiveMatches >= 5) {
-            sounds.unstoppable.play();
-        } else if (gameState.consecutiveMatches >= 3) {
-            sounds.threeinarow.play();
-        } else if (gameState.consecutiveMatches >= 2) {
-            sounds.twoinarow.play();
-        } else {
+
+        let basePoints = 100;
+        let bonus = 0;
+
+        // 🎯 Bonus point rules
+        switch (gameState.consecutiveMatches) {
+            case 2:
+                bonus = 50;
+                sounds.twoinarow.play();
+                break;
+            case 3:
+                bonus = 150;
+                sounds.threeinarow.play();
+                break;
+            case 4:
+                bonus = 500;
+                if (sounds.fourinarow) {
+                    sounds.fourinarow.play();
+                } else {
+                    sounds.threeinarow.play();
+                }
+                break;
+            case 5:
+            default:
+                bonus = 1000;
+                sounds.unstoppable.play();
+                break;
+        }
+
+        // Fallback for 1st match
+        if (gameState.consecutiveMatches === 1) {
             sounds.correct.play();
         }
-        
-        gameState.score += 100;
-        
-		// ADD THE HINT REWARD CODE RIGHT HERE
-        if (gameState.matchedPairs % 5 === 0) { // Every 5 matches
+
+        const totalPoints = basePoints + bonus;
+        gameState.score += totalPoints;
+
+        // 🎉 Show bonus notification if bonus > 0
+        if (bonus > 0) {
+            showBonusNotification(`🔥 Streak x${gameState.consecutiveMatches}! +${bonus} bonus`);
+        }
+
+        // Optional: Give a hint every 5 matches
+        if (gameState.matchedPairs % 5 === 0) {
             gameState.hintsRemaining++;
             sounds.extrapickup.play();
-            updateDisplay();
-            
-            // Show a little visual feedback
-            const streakIndicator = document.getElementById('streakIndicator');
-            streakIndicator.textContent = `🎉 +1 Hint! (${gameState.hintsRemaining} total)`;
-            streakIndicator.classList.add('show');
-            
-            setTimeout(() => {
-                streakIndicator.classList.remove('show');
-            }, 2000);
+            showBonusNotification(`✨ Bonus Hint Earned! (${gameState.hintsRemaining} total)`);
         }
-		
-        // Check if game is won
+
         if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
             gameWon();
         }
+
     } else {
-        // No match, flip cards back
+        // Mismatch
         card1.element.classList.remove('flipped');
         card2.element.classList.remove('flipped');
         gameState.score -= 10;
         gameState.consecutiveMatches = 0;
         gameState.recentMismatches++;
-        
-        // Play appropriate mismatch sound
+
         if (gameState.recentMismatches >= 3) {
             const ohnoSounds = [sounds.ohno1, sounds.ohno2];
             ohnoSounds[Math.floor(Math.random() * ohnoSounds.length)].play();
@@ -1052,6 +1069,7 @@ function checkMatch() {
     gameState.flippedCards = [];
     updateDisplay();
 }
+
 
 function startTimer() {
     gameState.timerInterval = setInterval(() => {
