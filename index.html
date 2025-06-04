@@ -275,6 +275,7 @@
 
         @keyframes victoryPop {
             0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
             100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
 
@@ -806,7 +807,7 @@ const conclaveCharacters = [
     { name: "Hodlor", image: "Hodlor.png" },
     { name: "Inept Healer", image: "Inept Healer.png" }
 ];
-let gameState = {
+llet gameState = {
     cards: [],
     flippedCards: [],
     matchedPairs: 0,
@@ -816,7 +817,10 @@ let gameState = {
     gameStarted: false,
     timerInterval: null,
     difficulty: 'medium',
-    playerName: ''
+    playerName: '',
+    hintsRemaining: 2, // Add this line
+    consecutiveMatches: 0, // Add these for streak tracking
+    recentMismatches: 0
 };
 
 const difficulties = {
@@ -838,6 +842,7 @@ window.onload = function() {
 function initGame() {
     const difficulty = document.getElementById('difficulty').value;
     gameState.difficulty = difficulty;
+	gameState.hintsRemaining = 2; // Reset hints on new game
     const pairCount = difficulties[difficulty].pairs;
     const gridSize = difficulties[difficulty].grid;
     
@@ -1006,6 +1011,22 @@ function checkMatch() {
         
         gameState.score += 100;
         
+		// ADD THE HINT REWARD CODE RIGHT HERE
+        if (gameState.matchedPairs % 5 === 0) { // Every 5 matches
+            gameState.hintsRemaining++;
+            sounds.extrapickup.play();
+            updateDisplay();
+            
+            // Show a little visual feedback
+            const streakIndicator = document.getElementById('streakIndicator');
+            streakIndicator.textContent = `🎉 +1 Hint! (${gameState.hintsRemaining} total)`;
+            streakIndicator.classList.add('show');
+            
+            setTimeout(() => {
+                streakIndicator.classList.remove('show');
+            }, 2000);
+        }
+		
         // Check if game is won
         if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
             gameWon();
@@ -1041,6 +1062,7 @@ function startTimer() {
 function updateDisplay() {
     document.getElementById('score').textContent = gameState.score;
     document.getElementById('moves').textContent = gameState.moves;
+    document.getElementById('hintsRemaining').textContent = gameState.hintsRemaining; // Add this line
     
     const minutes = Math.floor(gameState.timer / 60);
     const seconds = gameState.timer % 60;
@@ -1080,8 +1102,9 @@ function newGame() {
 }
 
 function showHint() {
-    if (gameState.score < 10) {
-        alert("You need at least 10 points to use a hint!");
+        // Check if player has any hints left
+    if (gameState.hintsRemaining <= 0) {
+        alert("You're out of hints!");
         return;
     }
     
@@ -1097,19 +1120,17 @@ function showHint() {
             const matchingElement = document.querySelector(`[data-index="${matchingIndex}"]`);
             
             if (!matchingElement.classList.contains('matched')) {
-                // Deduct points for hint
-                gameState.score -= 10;
+                // Use up a hint
+                gameState.hintsRemaining--;
                 updateDisplay();
                 
                 // Play hint sound (using pickle sound for hints)
                 sounds.pickle.play();
                 
-                matchingElement.style.border = '3px solid #ffd700';
-                matchingElement.style.boxShadow = '0 0 20px #ffd700';
+                matchingElement.classList.add('hint-glow');
                 
                 setTimeout(() => {
-                    matchingElement.style.border = '';
-                    matchingElement.style.boxShadow = '';
+                    matchingElement.classList.remove('hint-glow');
                 }, 2000);
             }
         }
