@@ -19,56 +19,6 @@
   box-sizing: border-box;
 }
 
-/* Add to your style section */
-.game-mode-selector {
-  margin-bottom: 15px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.game-mode-selector select {
-  padding: 8px 15px;
-  border-radius: 5px;
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: clamp(0.9rem, 2.5vw, 1rem);
-}
-
-.portia-score {
-  background: rgba(255, 107, 53, 0.2);
-  padding: clamp(8px, 2vw, 10px) clamp(15px, 4vw, 20px);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 107, 53, 0.4);
-}
-
-.turn-indicator {
-  width: 100%;
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 10px;
-  font-size: 1.1rem;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-.card.portia-thinking {
-  animation: portiaThink 1s infinite;
-}
-
-@keyframes portiaThink {
-  0%, 100% { box-shadow: 0 0 10px rgba(255, 107, 53, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.8); }
-}
-
 .logo {
   height: auto;
   max-height: 55px;
@@ -567,13 +517,6 @@
 <label for="playerName">Your Name: </label>
 <input id="playerName" placeholder="Enter your name" type="text"/>
 </div>
-<div class="game-mode-selector">
-  <label for="gameMode">Game Mode: </label>
-  <select id="gameMode">
-    <option value="solo">Solo Play</option>
-    <option value="vsPortia">🤖 Player vs Portia</option>
-  </select>
-</div>
 <div class="difficulty-selector">
 <label for="difficulty">Difficulty: </label>
 <select id="difficulty">
@@ -872,60 +815,8 @@
       consecutiveMatches: 0,
       recentMismatches: 0,
       usedHintThisTurn: false
-	  gameMode: 'solo',
-	  isPortiaTurn: false,
-	  playerPairs: 0,
-	  portiaPairs: 0,
-	  playerScore: 0,
-	  portiaScore: 0,
     };
 
-	const portiaAI = {
-	  getKnownMatches() {
-		// Returns array of known matching pairs
-		const known = [];
-		const flipped = gameState.cards
-			.map((card, idx) => ({ card, idx }))
-			.filter(({ card }) => card.flippedBy === 'portia' && !card.matched);
-    
-			for (let i = 0; i < flipped.length; i++) {
-			  for (let j = i + 1; j < flipped.length; j++) {
-				if (flipped[i].card.matchId === flipped[j].card.matchId) {
-				  known.push([flipped[i].idx, flipped[j].idx]);
-				}
-			}
-		}
-    return known;
-  },
-
-  getRandomMove() {
-    // Returns random unflipped, unmatched cards
-    const available = gameState.cards
-      .map((card, idx) => ({ card, idx }))
-      .filter(({ card }) => !card.matched && !card.flipped);
-    
-    if (available.length < 2) return [];
-    
-    const first = Math.floor(Math.random() * available.length);
-    let second;
-    do {
-      second = Math.floor(Math.random() * available.length);
-    } while (second === first);
-    
-    return [available[first].idx, available[second].idx];
-  },
-
-  makeMove() {
-    const knownMatches = this.getKnownMatches();
-    if (knownMatches.length > 0) {
-      // Portia knows a match - use it
-      return knownMatches[0];
-    }
-    // Otherwise make a random move
-    return this.getRandomMove();
-  }
-};
-	
     const difficulties = {
       easy: { pairs: 8, grid: 4 },
       medium: { pairs: 18, grid: 6 },
@@ -1008,143 +899,28 @@
     }
 
     function flipCard(index) {
-  if (gameState.gameMode === 'vsPortia' && gameState.isPortiaTurn) return;
-  if (!gameState.gameStarted) {
-    startTimer();
-    gameState.gameStarted = true;
-  }
-  
-  const card = gameState.cards[index];
-  const cardElement = document.querySelector(`[data-index="${index}"]`);
-  
-  if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return;
-  if (gameState.flippedCards.length >= 2) return;
-
-  sounds.flip.play();
-  cardElement.classList.add('flipped');
-  card.flippedBy = 'human'; // Track who flipped this card
-  gameState.flippedCards.push({ index, card, element: cardElement });
-
-  if (gameState.flippedCards.length === 2) {
-    gameState.moves++;
-    updateDisplay();
-    setTimeout(() => {
-      const matched = checkMatch();
-      if (gameState.gameMode === 'vsPortia') {
-        handleVSPortiaResult(matched, 'human');
-      } else {
-        if (!matched) {
-          // In solo mode, just flip back if no match
-          gameState.flippedCards.forEach(fc => {
-            fc.element.classList.remove('flipped');
-          });
-        }
-        gameState.flippedCards = [];
-        updateDisplay();
+      if (!gameState.gameStarted) {
+        startTimer();
+        gameState.gameStarted = true;
       }
-    }, 1000);
-  }
-}
+      const card = gameState.cards[index];
+      const cardElement = document.querySelector(`[data-index="${index}"]`);
+      if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return;
+      if (gameState.flippedCards.length >= 2) return;
 
-function handleVSPortiaResult(matched, player) {
-  if (matched) {
-    // Award the pair to the current player
-    if (player === 'human') {
-      gameState.playerPairs++;
-      gameState.playerScore += 100;
-      showBonusNotification('🎉 You got a pair! Go again!');
-      // Player gets another turn
-    } else {
-      gameState.portiaPairs++;
-      gameState.portiaScore += 100;
-      showBonusNotification('🤖 Portia got a pair! She goes again!');
-      // Portia gets another turn
-      setTimeout(() => {
-        portiasTurn();
-      }, 1500);
-    }
-  } else {
-    // Switch turns
-    if (player === 'human') {
-      gameState.isPortiaTurn = true;
-      setTimeout(() => {
-        portiasTurn();
-      }, 1000);
-    } else {
-      gameState.isPortiaTurn = false;
-    }
-  }
-  
-  // Clear flipped cards
-  gameState.flippedCards.forEach(card => {
-    if (!card.card.matched) {
-      card.element.classList.remove('flipped');
-    }
-  });
-  gameState.flippedCards = [];
-  
-  updateDisplay();
-  
-  // Check for game end
-  if (gameState.playerPairs + gameState.portiaPairs === 
-      difficulties[gameState.difficulty].pairs) {
-    setTimeout(() => {
-      gameWon();
-    }, 1000);
-  }
-}
+      sounds.flip.play();
+      cardElement.classList.add('flipped');
+      gameState.flippedCards.push({ index, card, element: cardElement });
 
-function portiasTurn() {
-  if (gameState.playerPairs + gameState.portiaPairs >= 
-      difficulties[gameState.difficulty].pairs) {
-    return;
-  }
-  
-  gameState.isPortiaTurn = true;
-  updateDisplay();
-  
-  // Portia thinks for a moment
-  setTimeout(() => {
-    const move = portiaAI.makeMove();
-    if (move.length >= 2) {
-      const [firstCard, secondCard] = move;
-      
-      // Add thinking animation
-      const firstEl = document.querySelector(`[data-index="${firstCard}"]`);
-      const secondEl = document.querySelector(`[data-index="${secondCard}"]`);
-      
-      firstEl.classList.add('portia-thinking');
-      secondEl.classList.add('portia-thinking');
-      
-      // Flip first card
-      setTimeout(() => {
-        firstEl.classList.remove('portia-thinking');
-        portiaFlipCard(firstCard);
-        
-        // Flip second card after a delay
+      if (gameState.flippedCards.length === 2) {
+        gameState.moves++;
+        updateDisplay();
         setTimeout(() => {
-          secondEl.classList.remove('portia-thinking');
-          portiaFlipCard(secondCard);
-          
-          // Check result
-          setTimeout(() => {
-            const matched = checkMatch();
-            handleVSPortiaResult(matched, 'portia');
-          }, 1000);
-        }, 800);
-      }, 1000);
+          checkMatch();
+          autoFlipLastTwoCards();
+        }, 1000);
+      }
     }
-  }, 1200);
-}
-
-function portiaFlipCard(index) {
-  const card = gameState.cards[index];
-  const cardElement = document.querySelector(`[data-index="${index}"]`);
-  
-  cardElement.classList.add('flipped');
-  card.flippedBy = 'portia'; // Track that Portia flipped this
-  gameState.flippedCards.push({ index, card, element: cardElement });
-}
 
     function autoFlipLastTwoCards() {
       const remainingIndexes = gameState.cards
@@ -1168,52 +944,96 @@ function portiaFlipCard(index) {
       }
     }
 
-   function checkMatch() {
-  if (gameState.flippedCards.length < 2) return false;
-  
-  const [card1, card2] = gameState.flippedCards;
-  if (card1.card.matchId === card2.card.matchId) {
-    // Match found
-    card1.element.classList.add('matched');
-    card2.element.classList.add('matched');
-    card1.card.matched = true;
-    card2.card.matched = true;
-    
-    // Play sound based on who got the match
-    if (gameState.gameMode === 'vsPortia') {
-      if (gameState.isPortiaTurn) {
-        sounds.correct.play();
+    function checkMatch() {
+      const [card1, card2] = gameState.flippedCards;
+      if (card1.card.matchId === card2.card.matchId) {
+        card1.element.classList.add('matched');
+        card2.element.classList.add('matched');
+        gameState.matchedPairs++;
+
+        if (gameState.usedHintThisTurn) {
+          gameState.consecutiveMatches = 0;
+          gameState.usedHintThisTurn = false;
+        } else {
+          gameState.consecutiveMatches++;
+        }
+        gameState.recentMismatches = 0;
+
+        let basePoints = 100;
+        let bonus = 0;
+
+        if (gameState.consecutiveMatches >= 1) {
+          switch (gameState.consecutiveMatches) {
+            case 1:
+              sounds.correct.play();
+              break;
+            case 2:
+              bonus = 50;
+              sounds.twoinarow.play();
+              break;
+            case 3:
+              bonus = 150;
+              sounds.threeinarow.play();
+              break;
+            case 4:
+              bonus = 500;
+              if (sounds.fourinarow) {
+                sounds.fourinarow.play();
+              } else {
+                sounds.threeinarow.play();
+              }
+              break;
+            case 5:
+            default:
+              bonus = 1000;
+              sounds.unstoppable.play();
+              break;
+          }
+        }
+
+        gameState.score += basePoints + bonus;
+        if (bonus > 0) {
+          showBonusNotification(`🔥 Streak x${gameState.consecutiveMatches}! +${bonus} bonus`);
+        }
+
+        if (gameState.matchedPairs % 5 === 0) {
+          gameState.hintsRemaining++;
+          sounds.extrapickup.play();
+          showBonusNotification(`✨ Bonus Hint Earned! (${gameState.hintsRemaining} total)`);
+        }
+
+        if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
+          gameWon();
+        }
       } else {
-        sounds.ohyeah.play();
-      }
-    } else {
-      sounds.correct.play();
-    }
-    
-    return true;
-  } else {
-    // No match
-    if (gameState.gameMode === 'vsPortia') {
-      sounds.keeptrying.play();
-    } else {
-      // 30% chance to play mismatch sound in solo mode
-      if (Math.random() < 0.3) {
-        const feedbackSounds = [
-          sounds.keeptrying,
-          sounds.ohno1,
-          sounds.ohno2,
-          sounds.heartbeat,
-          sounds.ohyeah,
-          sounds.nopressure,
-          sounds.areyoutrying
-        ];
-        const choice = feedbackSounds[Math.floor(Math.random() * feedbackSounds.length)];
-        choice.play();
-      }
-    }
-    return false;
-  }
+        card1.element.classList.remove('flipped');
+        card2.element.classList.remove('flipped');
+        gameState.score -= 10;
+        gameState.consecutiveMatches = 0;
+        gameState.recentMismatches++;
+
+        // 30% chance to play one of the “mismatch” sounds:
+if (Math.random() < 0.3) {
+  const feedbackSounds = [
+    sounds.keeptrying,
+    sounds.ohno1,
+    sounds.ohno2,
+    sounds.heartbeat,
+    sounds.ohyeah,
+    sounds.nopressure,
+    sounds.areyoutrying
+  ];
+  const choice = feedbackSounds[
+    Math.floor(Math.random() * feedbackSounds.length)
+  ];
+  choice.play();
 }
+
+}
+
+      gameState.flippedCards = [];
+      updateDisplay();
+    }
 
     function startTimer() {
       gameState.timerInterval = setInterval(() => {
@@ -1223,93 +1043,29 @@ function portiaFlipCard(index) {
     }
 
     function updateDisplay() {
-  if (gameState.gameMode === 'vsPortia') {
-    document.getElementById('score').textContent = gameState.playerScore;
-    document.getElementById('score').parentElement.innerHTML = 
-      `Player: <span id="score">${gameState.playerScore}</span>`;
-    
-    // Add Portia's score display
-    if (!document.getElementById('portiaScore')) {
-      const hintsElement = document.querySelector('.hints-remaining');
-      hintsElement.insertAdjacentHTML('afterend', 
-        `<div class="portia-score">Portia: <span id="portiaScore">${gameState.portiaScore}</span></div>`);
-    } else {
-      document.getElementById('portiaScore').textContent = gameState.portiaScore;
+      document.getElementById('score').textContent = gameState.score;
+      document.getElementById('moves').textContent = gameState.moves;
+      document.getElementById('hintsRemaining').textContent = gameState.hintsRemaining;
+      const minutes = Math.floor(gameState.timer / 60);
+      const seconds = gameState.timer % 60;
+      document.getElementById('timer').textContent =
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
-    
-    // Show whose turn it is
-    const turnIndicator = document.getElementById('turnIndicator') || 
-      document.querySelector('.game-info').insertAdjacentHTML('afterbegin',
-        `<div class="turn-indicator" id="turnIndicator"></div>`);
-    
-    turnIndicator.textContent = gameState.isPortiaTurn ? 
-      "🤖 Portia's turn..." : "✨ Your turn!";
-    turnIndicator.style.color = gameState.isPortiaTurn ? "#ff6b35" : "#ffd700";
-  } else {
-    document.getElementById('score').textContent = gameState.score;
-    document.getElementById('score').parentElement.innerHTML = 
-      `Score: <span id="score">${gameState.score}</span>`;
-    
-    // Remove Portia elements if they exist
-    const portiaScore = document.getElementById('portiaScore');
-    if (portiaScore) portiaScore.parentElement.remove();
-    const turnIndicator = document.getElementById('turnIndicator');
-    if (turnIndicator) turnIndicator.remove();
-  }
-  
-  document.getElementById('moves').textContent = gameState.moves;
-  document.getElementById('hintsRemaining').textContent = gameState.hintsRemaining;
-  
-  const minutes = Math.floor(gameState.timer / 60);
-  const seconds = gameState.timer % 60;
-  document.getElementById('timer').textContent = 
-    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
 
     function gameWon() {
-  clearInterval(gameState.timerInterval);
-  
-  if (gameState.gameMode === 'vsPortia') {
-    // Calculate bonus based on performance vs Portia
-    const bonusPoints = Math.max(0, 500 - (gameState.moves * 5) - (gameState.timer * 1));
-    gameState.playerScore += bonusPoints;
-    
-    // Determine winner
-    let winnerMessage;
-    if (gameState.playerPairs > gameState.portiaPairs) {
+      clearInterval(gameState.timerInterval);
+      const bonusPoints = Math.max(0, 500 - (gameState.moves * 10) - (gameState.timer * 2));
+      gameState.score += bonusPoints;
       sounds.victory.play();
-      winnerMessage = `🎉 You defeated Portia ${gameState.playerPairs} to ${gameState.portiaPairs}!`;
-    } else if (gameState.portiaPairs > gameState.playerPairs) {
-      sounds.complete.play();
-      winnerMessage = `🤖 Portia won ${gameState.portiaPairs} to ${gameState.playerPairs}. Better luck next time!`;
-    } else {
-      sounds.complete.play();
-      winnerMessage = `⚔️ It's a tie! ${gameState.playerPairs} pairs each.`;
+      document.getElementById('victoryText').innerHTML = `
+        <p>You matched all Characters!</p>
+        <p>Moves: ${gameState.moves}</p>
+        <p>Time: ${Math.floor(gameState.timer / 60)}:${(gameState.timer % 60).toString().padStart(2, '0')}</p>
+        <p>Final Score: ${gameState.score}</p>
+      `;
+      document.getElementById('victoryMessage').style.display = 'block';
+      saveHighScore();
     }
-    
-    document.getElementById('victoryText').innerHTML = `
-      <p>${winnerMessage}</p>
-      <p>Moves: ${gameState.moves}</p>
-      <p>Time: ${Math.floor(gameState.timer / 60)}:${(gameState.timer % 60).toString().padStart(2, '0')}</p>
-      <p>Your Score: ${gameState.playerScore}</p>
-      <p>Portia's Score: ${gameState.portiaScore}</p>
-    `;
-  } else {
-    // Original solo game victory logic
-    const bonusPoints = Math.max(0, 500 - (gameState.moves * 10) - (gameState.timer * 2));
-    gameState.score += bonusPoints;
-    sounds.victory.play();
-    document.getElementById('victoryText').innerHTML = `
-      <p>You matched all Characters!</p>
-      <p>Moves: ${gameState.moves}</p>
-      <p>Time: ${Math.floor(gameState.timer / 60)}:${(gameState.timer % 60).toString().padStart(2, '0')}</p>
-      <p>Final Score: ${gameState.score}</p>
-    `;
-  }
-  
-  document.getElementById('victoryMessage').style.display = 'block';
-  saveHighScore();
-}
 
     function hideVictory() {
       document.getElementById('victoryMessage').style.display = 'none';
@@ -1411,9 +1167,6 @@ window.addEventListener('load', () => {
     sessionStorage.setItem('introSeen', 'true');
   } else {
     document.getElementById("introModal").style.display = "none";
-	// Add this with your other event listeners
-document.getElementById('gameMode').addEventListener('change', function() {
-  newGame();
   }
 });
 </script>
