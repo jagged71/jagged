@@ -465,11 +465,6 @@
     </style>
 </head>
 <body>
-	<div class="branding-header">
-  <img src="splinterlands-logo.png" alt="Splinterlands" class="logo splinterlands-logo">
-  <img src="conclave-arcana-logo.png" alt="Conclave Arcana" class="logo conclave-logo">
-</div>
-
     <div class="header">
         <h1>⚔️ Conclave Arcana Memory Game ⚔️</h1>
         <p>Match the character images!</p>
@@ -827,7 +822,6 @@ let gameState = {
     hintsRemaining: 2, // Add this line
     consecutiveMatches: 0, // Add these for streak tracking
     recentMismatches: 0
-	usedHintThisTurn: false // 🟡 Add this
 };
 
 const difficulties = {
@@ -998,80 +992,57 @@ function checkMatch() {
     const [card1, card2] = gameState.flippedCards;
 
     if (card1.card.matchId === card2.card.matchId) {
+        // Match found!
         card1.element.classList.add('matched');
-        card2.element.classList.add('matched');
+        card2.element.classList.add('matched');		
         gameState.matchedPairs++;
-		
-		// ✅ Disable streak if hint was used
-        if (gameState.usedHintThisTurn) {
-            gameState.consecutiveMatches = 0;
-            gameState.usedHintThisTurn = false; // Reset it for next turn
-        } else {
-            gameState.consecutiveMatches++;
-        }
-		
+        gameState.consecutiveMatches++;
         gameState.recentMismatches = 0;
-
-        let basePoints = 100;
-        let bonus = 0;
-
-        // ✅ Only apply bonus if no hint was used (i.e., streak count > 0)
-        if (gameState.consecutiveMatches >= 1) {
-            switch (gameState.consecutiveMatches) {
-                case 1:
-                    sounds.correct.play();
-                    break;
-                case 2:
-                    bonus = 50;
-                    sounds.twoinarow.play();
-                    break;
-                case 3:
-                    bonus = 150;
-                    sounds.threeinarow.play();
-                    break;
-                case 4:
-                    bonus = 500;
-                    if (sounds.fourinarow) {
-                        sounds.fourinarow.play();
-                    } else {
-                        sounds.threeinarow.play();
-                    }
-                    break;
-                case 5:
-                default:
-                    bonus = 1000;
-                    sounds.unstoppable.play();
-                    break;
-            }
+        
+        // Play appropriate match sound based on streak
+        if (gameState.consecutiveMatches >= 5) {
+            sounds.unstoppable.play();
+		} else if (gameState.consecutiveMatches >= 4) {
+            sounds.fourinarow.play();	
+        } else if (gameState.consecutiveMatches >= 3) {
+            sounds.threeinarow.play();
+        } else if (gameState.consecutiveMatches >= 2) {
+            sounds.twoinarow.play();
+        } else {
+            sounds.correct.play();
         }
-
-        gameState.score += basePoints + bonus;
-
-        // 🎉 Show bonus message if there was a bonus
-        if (bonus > 0) {
-            showBonusNotification(`🔥 Streak x${gameState.consecutiveMatches}! +${bonus} bonus`);
-        }
-
-        // 🎁 Extra hint every 5 matches
-        if (gameState.matchedPairs % 5 === 0) {
+        
+        gameState.score += 100;
+        
+		// ADD THE HINT REWARD CODE RIGHT HERE
+        if (gameState.matchedPairs % 5 === 0) { // Every 5 matches
             gameState.hintsRemaining++;
             sounds.extrapickup.play();
-            showBonusNotification(`✨ Bonus Hint Earned! (${gameState.hintsRemaining} total)`);
+            updateDisplay();
+            
+            // Show a little visual feedback
+            const streakIndicator = document.getElementById('streakIndicator');
+            streakIndicator.textContent = `🎉 +1 Hint! (${gameState.hintsRemaining} total)`;
+            streakIndicator.classList.add('show');
+            
+            setTimeout(() => {
+                streakIndicator.classList.remove('show');
+            }, 2000);
         }
-
-        // 🏆 Game complete check
+		
+        // Check if game is won
         if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
             gameWon();
         }
-
     } else {
-        // ❌ Mismatch
+        // No match, flip cards back
         card1.element.classList.remove('flipped');
         card2.element.classList.remove('flipped');
         gameState.score -= 10;
         gameState.consecutiveMatches = 0;
         gameState.recentMismatches++;
-
+        
+        // Play appropriate mismatch sound
         if (gameState.recentMismatches >= 3) {
             const ohnoSounds = [sounds.ohno1, sounds.ohno2];
             ohnoSounds[Math.floor(Math.random() * ohnoSounds.length)].play();
@@ -1154,7 +1125,6 @@ function showHint() {
             if (!matchingElement.classList.contains('matched')) {
                 // Use up a hint
                 gameState.hintsRemaining--;
-				gameState.usedHintThisTurn = true;
                 updateDisplay();
                 
                 // Play hint sound (using pickle sound for hints)
@@ -1224,25 +1194,8 @@ function loadHighScores() {
     });
 }
 
-function showBonusNotification(message) {
-    const streakEl = document.getElementById('streakIndicator');
-    streakEl.textContent = message;
-    streakEl.classList.add('show');
-
-    clearTimeout(streakEl.hideTimeout);
-    streakEl.hideTimeout = setTimeout(() => {
-        streakEl.classList.remove('show');
-    }, 2500);
-}
-
 // Event listeners
 document.getElementById('difficulty').addEventListener('change', newGame);
     </script>
-	<footer class="footer-links">
-  <p>
-    <a href="https://splinterlands.com" target="_blank">🌐 Play Splinterlands</a> |
-    <a href="https://discord.gg/pkuTQBVR" target="_blank">💬 Join Discord</a>
-  </p>
-</footer>
 </body>
 </html>
