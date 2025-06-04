@@ -25,6 +25,12 @@
             align-items: center;
             padding: 20px;
             color: #fff;
+            animation: backgroundShimmer 15s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShimmer {
+            0%, 100% { background: linear-gradient(135deg, #1a0033, #2d1b69, #4a148c); }
+            50% { background: linear-gradient(135deg, #2d1b69, #4a148c, #6a1b9a); }
         }
 
         .header {
@@ -40,6 +46,12 @@
             background-clip: text;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .game-info {
@@ -51,12 +63,27 @@
             font-size: clamp(0.9rem, 2.5vw, 1.1rem);
         }
 
-        .score, .moves, .timer {
+        .score, .moves, .timer, .hints-remaining {
             background: rgba(255,255,255,0.1);
             padding: clamp(8px, 2vw, 10px) clamp(15px, 4vw, 20px);
             border-radius: 10px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .hints-remaining {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+
+        .score.pulse {
+            animation: scorePulse 0.5s ease-in-out;
+        }
+
+        @keyframes scorePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); background: rgba(0, 255, 0, 0.3); }
         }
 
         .game-container {
@@ -82,7 +109,7 @@
         }
 
         .card:hover {
-            transform: scale(1.05);
+            transform: scale(1.05) rotateZ(2deg);
         }
 
         .card-inner {
@@ -154,6 +181,29 @@
         .card.matched {
             opacity: 0.6;
             transform: scale(0.9);
+            animation: matchedBounce 0.6s ease-out;
+        }
+
+        @keyframes matchedBounce {
+            0% { transform: scale(1) rotateZ(0deg); }
+            50% { transform: scale(1.2) rotateZ(5deg); }
+            100% { transform: scale(0.9) rotateZ(0deg); }
+        }
+
+        .card.hint-glow {
+            animation: hintGlow 2s ease-in-out;
+            z-index: 10;
+        }
+
+        @keyframes hintGlow {
+            0%, 100% { 
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 30px #ffd700, 0 0 50px #ffd700;
+                transform: scale(1.05);
+            }
         }
 
         .controls {
@@ -175,11 +225,34 @@
             background: linear-gradient(45deg, #ff6b35, #ffd700);
             color: #1a0033;
             min-width: 120px;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255,107,53,0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
         }
 
         .victory-message {
@@ -197,6 +270,12 @@
             z-index: 1000;
             max-width: 90%;
             width: 400px;
+            animation: victoryPop 0.6s ease-out;
+        }
+
+        @keyframes victoryPop {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
 
         .difficulty-selector {
@@ -270,6 +349,54 @@
             color: #ff6b35;
         }
 
+        .audio-controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .audio-controls button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255,107,53,0.8);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .audio-controls button:hover {
+            background: rgba(255,107,53,1);
+            transform: translateY(-1px);
+        }
+
+        .streak-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 215, 0, 0.9);
+            color: #1a0033;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            transform: translateX(100px);
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 100;
+        }
+
+        .streak-indicator.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -308,6 +435,12 @@
             .difficulty-selector select {
                 width: 100%;
                 max-width: 200px;
+            }
+
+            .streak-indicator {
+                top: 10px;
+                right: 10px;
+                font-size: 0.9rem;
             }
         }
 
@@ -355,6 +488,11 @@
         <div class="score">Score: <span id="score">0</span></div>
         <div class="moves">Moves: <span id="moves">0</span></div>
         <div class="timer">Time: <span id="timer">00:00</span></div>
+        <div class="hints-remaining">Hints: <span id="hintsRemaining">2</span></div>
+    </div>
+
+    <div class="streak-indicator" id="streakIndicator">
+        🔥 Streak: <span id="streakCount">0</span>
     </div>
 
     <div class="game-container" id="gameContainer">
@@ -363,17 +501,17 @@
 
     <div class="controls">
         <button class="btn" onclick="newGame()">New Game</button>
-        <button class="btn" onclick="showHint()">Hint (Costs 10 pts)</button>
+        <button class="btn" id="hintBtn" onclick="showHint()">Hint (Costs 10 pts)</button>
     </div>
 
-	<div class="audio-controls">
-		<button id="muteBtn">Mute</button>
-		<label for="musicVolume">Music Volume:</label>
-		<input type="range" id="musicVolume" min="0" max="1" step="0.01" value="0.5">
+    <div class="audio-controls">
+        <button id="muteBtn">Mute</button>
+        <label for="musicVolume">Music Volume:</label>
+        <input type="range" id="musicVolume" min="0" max="1" step="0.01" value="0.5">
 
-		<label for="sfxVolume">SFX Volume:</label>
-		<input type="range" id="sfxVolume" min="0" max="1" step="0.01" value="1">
-	</div>
+        <label for="sfxVolume">SFX Volume:</label>
+        <input type="range" id="sfxVolume" min="0" max="1" step="0.01" value="1">
+    </div>
 
     <div class="victory-message" id="victoryMessage">
         <h2>🎉 Victory! 🎉</h2>
@@ -645,395 +783,4 @@ const conclaveCharacters = [
     { name: "Caravan Guard", image: "Caravan Guard.png" },
     { name: "Cavewise Wayfinder", image: "Cavewise Wayfinder.png" },
     { name: "Conclave Artificer", image: "Conclave Artificer.png" },
-    { name: "Conclave Tracker", image: "Conclave Tracker.png" },
-    { name: "Craniax the Quick", image: "Craniax the Quick.png" },
-    { name: "Decrepit Windseer", image: "Decrepit Windseer.png" },
-    { name: "Deep Delver", image: "Deep Delver.png" },
-    { name: "Desolation", image: "Desolation.png" },
-    { name: "Fenmoor Gorgon", image: "Fenmoor Gorgon.png" },
-    { name: "Fenmoor Platypus", image: "Fenmoor Platypus.png" },
-    { name: "Fenmoor Wood Troll", image: "Fenmoor Wood Troll.png" },
-    { name: "Ferrous Brewer", image: "Ferrous Brewer.png" },
-    { name: "Filthy Scavenger", image: "Filthy Scavenger.png" },
-    { name: "Fithe Bladestone", image: "Fithe Bladestone.png" },
-    { name: "Flame for Hire", image: "Flame for Hire.png" },
-    { name: "Folen Flameye", image: "Folen Flameye.png" },
-    { name: "Forked-Tongue Sage", image: "Forked-Tongue Sage.png" },
-    { name: "Gonach Excavator", image: "Gonach Excavator.png" },
-    { name: "Gorgug the Endless", image: "Gorgug the Endless.png" },
-    { name: "Gramel the Hunger", image: "Gramel the Hunger.png" },
-    { name: "Grimward Ruinshot", image: "Grimward Ruinshot.png" },
-    { name: "Halfshell Seer", image: "Halfshell Seer.png" },
-    { name: "Happy Quokka", image: "Happy Quokka.png" },
-    { name: "Hodlor", image: "Hodlor.png" },
-    { name: "Inept Healer", image: "Inept Healer.png" }
-];
-let gameState = {
-    cards: [],
-    flippedCards: [],
-    matchedPairs: 0,
-    moves: 0,
-    score: 0,
-    timer: 0,
-    gameStarted: false,
-    timerInterval: null,
-    difficulty: 'medium',
-    playerName: ''
-};
-
-const difficulties = {
-    easy: { pairs: 8, grid: 4 },      // 4x4 = 16 cards (8 pairs)
-    medium: { pairs: 18, grid: 6 },   // 6x6 = 36 cards (18 pairs)
-    hard: { pairs: 32, grid: 8 },     // 8x8 = 64 cards (32 pairs)
-    crazy: { pairs: 72, grid: 12 }    // 12x12 = 144 cards (72 pairs)
-};
-
-// Initialize game on load
-window.onload = function() {
-    initGame();
-    loadHighScores();
-    document.getElementById('playerName').addEventListener('change', function() {
-        gameState.playerName = this.value;
-    });
-};
-
-function initGame() {
-    const difficulty = document.getElementById('difficulty').value;
-    gameState.difficulty = difficulty;
-    const pairCount = difficulties[difficulty].pairs;
-    const gridSize = difficulties[difficulty].grid;
-    
-    // Update grid layout - removed as we're using auto-fit now
-    const container = document.getElementById('gameContainer');
-    
-    // Create a copy of the characters array and shuffle it
-    const shuffledCharacters = [...conclaveCharacters];
-    for (let i = shuffledCharacters.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledCharacters[i], shuffledCharacters[j]] = [shuffledCharacters[j], shuffledCharacters[i]];
-    }
-
-    // Select characters for this game (cycle through if we need more than available)
-    const selectedCharacters = shuffledCharacters.slice(0, pairCount);
-    
-    // Create card pairs
-    gameState.cards = [];
-    selectedCharacters.forEach((char, index) => {
-        gameState.cards.push(
-            {
-                id: `img_${index}`,
-                type: 'image',
-                character: char,
-                matchId: index
-            },
-            {
-                id: `name_${index}`,
-                type: 'name',
-                character: char,
-                matchId: index
-            }
-        );
-    });
-
-    // Shuffle the cards array using Fisher-Yates shuffle
-    for (let i = gameState.cards.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [gameState.cards[i], gameState.cards[j]] = [gameState.cards[j], gameState.cards[i]];
-    }
-    
-    // Reset game state
-    gameState.flippedCards = [];
-    gameState.matchedPairs = 0;
-    gameState.moves = 0;
-    gameState.score = 0;
-    gameState.timer = 0;
-    gameState.gameStarted = false;
-    
-    if (gameState.timerInterval) {
-        clearInterval(gameState.timerInterval);
-    }
-    
-    updateDisplay();
-    renderCards();
-}
-
-function renderCards() {
-    const container = document.getElementById('gameContainer');
-    container.innerHTML = '';
-
-    gameState.cards.forEach((card, index) => {
-        const cardElement = document.createElement('div');
-        cardElement.className = 'card';
-        cardElement.dataset.index = index;
-        cardElement.onclick = () => flipCard(index);
-        
-        cardElement.innerHTML = `
-            <div class="card-inner">
-                <div class="card-front">
-                    <img src="${card.character.image}" alt="${card.character.name}" class="card-image">
-                </div>
-                <div class="card-back">
-                    <img src="conclave-logo.png" alt="Conclave Arcana Logo" class="card-logo">
-                </div>
-            </div>
-        `;
-
-        container.appendChild(cardElement);
-    });
-}
-
-function flipCard(index) {
-    if (!gameState.gameStarted) {
-        startTimer();
-        gameState.gameStarted = true;
-    }
-
-    const card = gameState.cards[index];
-    const cardElement = document.querySelector(`[data-index="${index}"]`);
-
-    // Check if card is already flipped or matched
-    if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) {
-        return;
-    }
-
-    // Check if two cards are already flipped
-    if (gameState.flippedCards.length >= 2) {
-        return;
-    }
-
-    // Flip the card
-    sounds.flip.play(); // 🔊 Play flip sound here
-    cardElement.classList.add('flipped');
-    gameState.flippedCards.push({ index, card, element: cardElement });
-
-    // Check for match when two cards are flipped
-    if (gameState.flippedCards.length === 2) {
-        gameState.moves++;
-        updateDisplay();
-        
-        setTimeout(() => {
-            checkMatch();
-            autoFlipLastTwoCards(); // Add this line here
-        }, 1000);
-    }
-}
-
-function autoFlipLastTwoCards() {
-    const remainingIndexes = gameState.cards
-        .map((card, idx) => ({ card, idx }))
-        .filter(({ card, idx }) => {
-            const cardElement = document.querySelector(`[data-index="${idx}"]`);
-            return !card.matched && !cardElement.classList.contains('flipped');
-        })
-        .map(({ idx }) => idx);
-
-    if (remainingIndexes.length === 2) {
-        setTimeout(() => {
-            remainingIndexes.forEach(idx => {
-                flipCard(idx); // Use your flipCard logic
-            });
-
-            // Delay to ensure flip animations complete before checking victory
-            setTimeout(() => {
-                const unmatched = document.querySelectorAll('.card:not(.matched)');
-                if (unmatched.length === 0) {
-                    checkVictory();
-                }
-            }, 1200);
-        }, 500);
-    }
-}
-
-function checkMatch() {
-    const [card1, card2] = gameState.flippedCards;
-
-    if (card1.card.matchId === card2.card.matchId) {
-        // Match found!
-        card1.element.classList.add('matched');
-        card2.element.classList.add('matched');		
-        gameState.matchedPairs++;
-        gameState.consecutiveMatches++;
-        gameState.recentMismatches = 0;
-        
-        // Play appropriate match sound based on streak
-        if (gameState.consecutiveMatches >= 5) {
-            sounds.unstoppable.play();
-        } else if (gameState.consecutiveMatches >= 3) {
-            sounds.threeinarow.play();
-        } else if (gameState.consecutiveMatches >= 2) {
-            sounds.twoinarow.play();
-        } else {
-            sounds.correct.play();
-        }
-        
-        gameState.score += 100;
-        
-        // Check if game is won
-        if (gameState.matchedPairs === difficulties[gameState.difficulty].pairs) {
-            gameWon();
-        }
-    } else {
-        // No match, flip cards back
-        card1.element.classList.remove('flipped');
-        card2.element.classList.remove('flipped');
-        gameState.score -= 10;
-        gameState.consecutiveMatches = 0;
-        gameState.recentMismatches++;
-        
-        // Play appropriate mismatch sound
-        if (gameState.recentMismatches >= 3) {
-            const ohnoSounds = [sounds.ohno1, sounds.ohno2];
-            ohnoSounds[Math.floor(Math.random() * ohnoSounds.length)].play();
-        } else {
-            sounds.keeptrying.play();
-        }
-    }
-
-    gameState.flippedCards = [];
-    updateDisplay();
-}
-
-function startTimer() {
-    gameState.timerInterval = setInterval(() => {
-        gameState.timer++;
-        updateDisplay();
-    }, 1000);
-}
-
-function updateDisplay() {
-    document.getElementById('score').textContent = gameState.score;
-    document.getElementById('moves').textContent = gameState.moves;
-    
-    const minutes = Math.floor(gameState.timer / 60);
-    const seconds = gameState.timer % 60;
-    document.getElementById('timer').textContent = 
-        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
-
-function gameWon() {
-    clearInterval(gameState.timerInterval);
-    
-    const bonusPoints = Math.max(0, 500 - (gameState.moves * 10) - (gameState.timer * 2));
-    gameState.score += bonusPoints;
-    
-    // Play victory sound
-    sounds.victory.play();
-    
-    document.getElementById('victoryText').innerHTML = `
-        <p>You matched all Characters!</p>
-        <p>Moves: ${gameState.moves}</p>
-        <p>Time: ${Math.floor(gameState.timer / 60)}:${(gameState.timer % 60).toString().padStart(2, '0')}</p>
-        <p>Final Score: ${gameState.score}</p>
-    `;
-    
-    document.getElementById('victoryMessage').style.display = 'block';
-    
-    // Save high score
-    saveHighScore();
-}
-
-function hideVictory() {
-    document.getElementById('victoryMessage').style.display = 'none';
-    newGame();
-}
-
-function newGame() {
-    initGame();
-}
-
-function showHint() {
-    if (gameState.score < 10) {
-        alert("You need at least 10 points to use a hint!");
-        return;
-    }
-    
-    if (gameState.flippedCards.length === 1) {
-        const flippedCard = gameState.flippedCards[0];
-        const matchingCard = gameState.cards.find(card => 
-            card.matchId === flippedCard.card.matchId && 
-            card.id !== flippedCard.card.id
-        );
-        
-        if (matchingCard) {
-            const matchingIndex = gameState.cards.indexOf(matchingCard);
-            const matchingElement = document.querySelector(`[data-index="${matchingIndex}"]`);
-            
-            if (!matchingElement.classList.contains('matched')) {
-                // Deduct points for hint
-                gameState.score -= 10;
-                updateDisplay();
-                
-                // Play hint sound (using pickle sound for hints)
-                sounds.pickle.play();
-                
-                matchingElement.style.border = '3px solid #ffd700';
-                matchingElement.style.boxShadow = '0 0 20px #ffd700';
-                
-                setTimeout(() => {
-                    matchingElement.style.border = '';
-                    matchingElement.style.boxShadow = '';
-                }, 2000);
-            }
-        }
-    } else {
-        alert("Flip one card first to get a hint for its match!");
-    }
-}
-
-// High score functions
-function saveHighScore() {
-    if (!gameState.playerName) {
-        gameState.playerName = document.getElementById('playerName').value || "Anonymous";
-    }
-    
-    const highScores = JSON.parse(localStorage.getItem('conclaveArcanaHighScores')) || [];
-    
-    highScores.push({
-        name: gameState.playerName,
-        score: gameState.score,
-        difficulty: gameState.difficulty,
-        time: gameState.timer,
-        date: new Date().toISOString()
-    });
-    
-    // Sort by score (descending)
-    highScores.sort((a, b) => b.score - a.score);
-    
-    // Keep only top 10 scores
-    if (highScores.length > 10) {
-        highScores.length = 10;
-    }
-    
-    localStorage.setItem('conclaveArcanaHighScores', JSON.stringify(highScores));
-    loadHighScores();
-}
-
-function loadHighScores() {
-    const highScores = JSON.parse(localStorage.getItem('conclaveArcanaHighScores')) || [];
-    const tbody = document.getElementById('highScoresBody');
-    tbody.innerHTML = '';
-    
-    highScores.forEach((score, index) => {
-        const row = document.createElement('tr');
-        
-        const minutes = Math.floor(score.time / 60);
-        const seconds = score.time % 60;
-        const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${score.name}</td>
-            <td>${score.score}</td>
-            <td>${score.difficulty.charAt(0).toUpperCase() + score.difficulty.slice(1)}</td>
-            <td>${timeString}</td>
-        `;
-        
-        tbody.appendChild(row);
-    });
-}
-
-// Event listeners
-document.getElementById('difficulty').addEventListener('change', newGame);
-    </script>
-</body>
-</html>
+    { name: "Conclave Tracker", image: "Conc
