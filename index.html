@@ -21,8 +21,8 @@
 
 .logo {
   height: auto;
-  max-height: 80px;
-  max-width: 60%;
+  max-height: 55px;
+  max-width: 40%;
   object-fit: contain;
 }
     * {
@@ -422,6 +422,16 @@
     padding: 12px 20px;
     font-size: 1rem;
 }
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+.header p {
+  margin: 0;
+}
 </style>
 <style>
 .branding-header {
@@ -484,12 +494,8 @@
 }
 </style>
 </head>
-<body><div class="header branding-inline"><img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/>
-
-
-<img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/></div>
+<body><div class="header branding-inline"><img alt="Splinterlands" class="logo splinterlands-logo" src="splinterlands-logo.png"/><h1>⚔️ Conclave Arcana Memory Game ⚔️</h1><p>Match the character images!</p><img alt="Conclave Arcana" class="logo conclave-logo" src="conclave-arcana-logo.png"/></div>
 <!-- 1. ✅ HEADER BRANDING SECTION -->
-
 <!-- 2. ✅ FOOTER BRANDING LINKS -->
 <footer class="footer-links">
 <p>
@@ -507,8 +513,6 @@
 </div>
 </div>
 <!-- 1. ✅ HEADER BRANDING SECTION -->
-
-
 <div class="player-name-input">
 <label for="playerName">Your Name: </label>
 <input id="playerName" placeholder="Enter your name" type="text"/>
