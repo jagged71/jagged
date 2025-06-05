@@ -1053,6 +1053,8 @@ if (Math.random() < 0.3) {
     }
 
     function gameWon() {
+      if (gameState.alreadySaved) return; // Prevent duplicate saves
+      gameState.alreadySaved = true;
       clearInterval(gameState.timerInterval);
       const bonusPoints = Math.max(0, 500 - (gameState.moves * 10) - (gameState.timer * 2));
       gameState.score += bonusPoints;
@@ -1072,6 +1074,7 @@ if (Math.random() < 0.3) {
       newGame();
     }
     function newGame() {
+      gameState.alreadySaved = false;
       initGame();
     }
 
